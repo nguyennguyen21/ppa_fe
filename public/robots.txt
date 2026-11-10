@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Không index các màn hình thao tác nội bộ.
+Disallow: /upload
+Disallow: /results
+Disallow: /compare
+Disallow: /relations
+Disallow: /ai-detect/analyze

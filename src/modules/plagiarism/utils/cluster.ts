@@ -381,9 +381,9 @@ export function kindColor(kind: SampleKind) {
   return KIND_COLOR[kind];
 }
 
-export function buildClusterModel(k: number): ClusterModel {
+export function buildClusterModel(k: number, samples: LibrarySample[] = sampleLibrary): ClusterModel {
   const normalizedK = Math.max(2, Math.min(4, k));
-  const prepared = sampleLibrary.map((sample) => {
+  const prepared = samples.map((sample) => {
     const { analysis, raw } = vectorFor(sample);
     return { sample, analysis, raw };
   });

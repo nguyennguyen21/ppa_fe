@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { CSSProperties, MouseEvent } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { IconType } from "react-icons";
+import { useTheme } from "../../../hook/theme-context";
 
 import { MdDashboard, MdPerson } from "react-icons/md";
 import { FaUpload, FaCodeCompare, FaListCheck, FaChartSimple, FaRobot, FaCircleNodes } from "react-icons/fa6";
@@ -103,6 +104,8 @@ export interface HamburgerBarProps {
     item: HamburgerBarItem,
     event: MouseEvent<HTMLAnchorElement>
   ) => void;
+  /** Gọi sau khi người dùng chọn một mục (dùng để đóng drawer trên mobile). */
+  onNavigate?: () => void;
 }
 
 // 4. Component chính
@@ -132,9 +135,18 @@ const HamburgerBar = ({
   ariaLabel = "Thanh điều hướng",
   onActiveChange,
   onItemClick,
+  onNavigate,
 }: HamburgerBarProps) => {
   // Lấy đường dẫn hiện tại từ React Router DOM
   const location = useLocation();
+  const { isDark } = useTheme();
+
+  // Bảng màu tự đổi theo theme; vẫn cho phép ghi đè qua props khi cần.
+  const resolvedIconColor = isDark ? "#a8a29e" : iconColor;
+  const resolvedActiveColor = isDark ? "#f5f5f4" : activeColor;
+  const resolvedActiveBackground = isDark ? "#2a2827" : activeBackground;
+  const resolvedHoverBackground = isDark ? "#232120" : hoverBackground;
+  const resolvedBorderColor = isDark ? "#3a3735" : borderColor;
 
   // Giữ state ban đầu của bạn
   const [internalActiveId, setInternalActiveId] =
@@ -176,7 +188,7 @@ const HamburgerBar = ({
     padding: 4,
     boxSizing: "border-box",
     background,
-    border: `1px solid ${borderColor}`,
+    border: `1px solid ${resolvedBorderColor}`,
     borderRadius: rounded,
     boxShadow: shadow
       ? "0 8px 24px rgba(0, 0, 0, 0.08)"
@@ -214,12 +226,10 @@ const HamburgerBar = ({
           height: itemSize,
           padding: showLabels ? "0 16px" : 12,
           boxSizing: "border-box",
-          color: isActive ? activeColor : iconColor,
-          background: isActive
-            ? activeBackground
-            : "transparent",
+          color: isActive ? resolvedActiveColor : resolvedIconColor,
+          background: isActive ? resolvedActiveBackground : "transparent",
           border: isActive
-            ? `1px solid ${borderColor}`
+            ? `1px solid ${resolvedBorderColor}`
             : "1px solid transparent",
           borderRadius: rounded,
           cursor: isDisabled
@@ -248,7 +258,12 @@ const HamburgerBar = ({
             ]
               .filter(Boolean)
               .join(" ")}
-            style={itemStyle}
+            style={
+              {
+                ...itemStyle,
+                "--hb-hover": resolvedHoverBackground,
+              } as CSSProperties
+            }
             onClick={(event) => {
               if (isDisabled) {
                 event.preventDefault();
@@ -263,18 +278,7 @@ const HamburgerBar = ({
 
               // Gọi callback khi nhấn vào mục menu
               onItemClick?.(item, event);
-            }}
-            onMouseEnter={(event) => {
-              if (!isDisabled && !isActive) {
-                event.currentTarget.style.background =
-                  hoverBackground;
-              }
-            }}
-            onMouseLeave={(event) => {
-              if (!isActive) {
-                event.currentTarget.style.background =
-                  "transparent";
-              }
+              onNavigate?.();
             }}
           >
             <Icon

@@ -109,7 +109,7 @@ const CodeViewer: React.FC<CodeViewerProps> = ({
               className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 bg-white border border-gray-200 px-2.5 py-1 rounded-md transition-all hover:shadow-sm"
             >
               {isCopied ? <FaCheck className="text-green-600" /> : <FaRegCopy />}
-              {isCopied ? "Đã copy" : "Copy"}
+              {isCopied ? "Đã sao chép" : "Sao chép"}
             </button>
           )}
         </div>

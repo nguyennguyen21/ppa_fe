@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FaArrowLeft,
@@ -7,8 +7,9 @@ import {
   FaMagnifyingGlassChart,
   FaShareNodes,
 } from "react-icons/fa6";
-import { sampleLibrary } from "../data/aiSampleLibrary";
+import { sampleLibrary, type LibrarySample } from "../data/aiSampleLibrary";
 import type { SampleKind } from "../data/aiSamples";
+import { useBackendData } from "../modules/lib/hook/backend-data-context";
 import {
   buildClusterModel,
   convexHullFor,
@@ -51,7 +52,55 @@ export default function AiClusterPage() {
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const model = useMemo(() => buildClusterModel(k), [k]);
+  const { aiResults, getSnippetCode } = useBackendData();
+  const [beCodes, setBeCodes] = useState<Record<string, string>>({});
+  const beSamples = useMemo<LibrarySample[]>(
+    () =>
+      aiResults.map((result) => ({
+        id: `be:${result.codeId}`,
+        kind: (result.prediction === "ai" ? "ai" : result.prediction === "human" ? "human" : "mixed") as SampleKind,
+        fileName: result.fileName,
+        title: result.fileName,
+        description: `BE · ${Math.round((result.confidence ?? 0) * 100)}%`,
+        author: "",
+        className: "",
+        uploadedAt: "",
+        code: "",
+      })),
+    [aiResults],
+  );
+  const source = aiResults.length > 0 ? beSamples : sampleLibrary;
+
+  useEffect(() => {
+    let cancelled = false;
+    const ids = aiResults.map((result) => `be:${result.codeId}`);
+    const pending = ids.filter((id) => !beCodes[id]);
+    if (pending.length === 0) return;
+    void (async () => {
+      for (const id of pending) {
+        const codeId = Number(id.slice(3));
+        const text = await getSnippetCode(codeId);
+        if (!cancelled && text != null) setBeCodes((current) => ({ ...current, [id]: text }));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [aiResults, beCodes, getSnippetCode]);
+
+  const effectiveSamples = useMemo<LibrarySample[]>(
+    () =>
+      source.map((s) => ({
+        ...s,
+        code: s.id.startsWith("be:") ? (beCodes[s.id] ?? "") : s.code,
+      })),
+    [source, beCodes],
+  );
+
+  const model = useMemo(
+    () => buildClusterModel(k, effectiveSamples.length > 0 ? effectiveSamples : undefined),
+    [k, effectiveSamples],
+  );
 
   const selectedPoint = useMemo(
     () => model.points.find((point) => point.sample.id === selectedId) ?? null,
@@ -98,14 +147,14 @@ export default function AiClusterPage() {
       <div className="relative overflow-hidden border-b border-stone-200 pb-6">
         <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-amber-200/40 via-sky-200/30 to-violet-200/40 blur-3xl" />
         <div className="relative flex items-center justify-between gap-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
             CODEX / Mô hình cụm
           </p>
           <Link
             to="/ai-detect"
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 transition-colors hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
           >
-            <FaArrowLeft className="text-[10px]" /> Về trang phân loại
+            <FaArrowLeft className="text-xs" /> Về trang phân loại
           </Link>
         </div>
         <h1 className="relative mt-2 flex items-center gap-3 font-serif text-4xl font-semibold tracking-tight text-stone-900">
@@ -114,10 +163,10 @@ export default function AiClusterPage() {
           </span>
           Bản đồ cụm AI và người viết
         </h1>
-        <p className="relative mt-3 max-w-3xl text-sm leading-relaxed text-stone-500">
-          12 bài mẫu được biểu diễn bằng 10 chỉ số tĩnh, sau đó được chuẩn hoá và chiếu xuống
-          mặt phẳng bằng PCA. k-means ghép các bài gần nhau thành các cụm; mạng láng giềng gần
-          nhất cho thấy bài nào kéo bài nào đi theo.
+        <p className="relative mt-3 max-w-3xl text-sm leading-relaxed text-stone-600">
+          {effectiveSamples.length} bài mẫu được biểu diễn bằng 10 chỉ số tĩnh, sau đó được chuẩn
+          hoá và chiếu xuống mặt phẳng bằng PCA. k-means ghép các bài gần nhau thành các cụm; mạng
+          láng giềng gần nhất cho thấy bài nào kéo bài nào đi theo.
         </p>
       </div>
 
@@ -125,33 +174,33 @@ export default function AiClusterPage() {
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="relative overflow-hidden border border-stone-200 bg-white px-4 py-4 shadow-sm" style={{ borderRadius: 12 }}>
           <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-amber-100/60 blur-2xl" />
-          <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
             Mẫu được phân tích
           </p>
           <p className="mt-1 font-serif text-3xl font-semibold text-stone-900">
             {sampleLibrary.length}
           </p>
-          <p className="mt-0.5 text-[11px] text-stone-500">4 AI · 4 người viết · 4 hỗn hợp</p>
+          <p className="mt-0.5 text-xs text-stone-600">4 AI · 4 người viết · 4 hỗn hợp</p>
         </div>
         <div className="relative overflow-hidden border border-stone-200 bg-white px-4 py-4 shadow-sm" style={{ borderRadius: 12 }}>
           <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-sky-100/60 blur-2xl" />
-          <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
             Số cụm
           </p>
           <p className="mt-1 font-serif text-3xl font-semibold text-stone-900">{model.k}</p>
-          <p className="mt-0.5 text-[11px] text-stone-500">
+          <p className="mt-0.5 text-xs text-stone-600">
             k-means trên 10 chỉ số · silhouette {model.silhouette.toFixed(2)}
           </p>
         </div>
         <div className="relative overflow-hidden border border-stone-200 bg-white px-4 py-4 shadow-sm" style={{ borderRadius: 12 }}>
           <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-violet-100/60 blur-2xl" />
-          <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
             Phương sai giải thích
           </p>
           <p className="mt-1 font-serif text-3xl font-semibold text-stone-900">
             {Math.round((model.explained[0] + model.explained[1]) * 100)}%
           </p>
-          <p className="mt-0.5 text-[11px] text-stone-500">
+          <p className="mt-0.5 text-xs text-stone-600">
             PC1 {Math.round(model.explained[0] * 100)}% · PC2 {Math.round(model.explained[1] * 100)}%
           </p>
         </div>
@@ -160,7 +209,7 @@ export default function AiClusterPage() {
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3 border border-stone-200 bg-white px-5 py-3.5 shadow-sm" style={{ borderRadius: 12 }}>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+          <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
             Số cụm
           </span>
           {[2, 3, 4].map((value) => (
@@ -171,7 +220,7 @@ export default function AiClusterPage() {
                 setK(value);
                 setActiveCluster(null);
               }}
-              className={`rounded-full border px-3 py-1 text-[11.5px] font-semibold transition-colors ${
+              className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
                 k === value
                   ? "border-stone-900 bg-stone-900 text-white"
                   : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900"
@@ -182,13 +231,13 @@ export default function AiClusterPage() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+          <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
             Tô màu
           </span>
           <button
             type="button"
             onClick={() => setColorMode("cluster")}
-            className={`rounded-full border px-3 py-1 text-[11.5px] font-semibold transition-colors ${
+            className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
               colorMode === "cluster"
                 ? "border-stone-900 bg-stone-900 text-white"
                 : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900"
@@ -199,7 +248,7 @@ export default function AiClusterPage() {
           <button
             type="button"
             onClick={() => setColorMode("label")}
-            className={`rounded-full border px-3 py-1 text-[11.5px] font-semibold transition-colors ${
+            className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
               colorMode === "label"
                 ? "border-stone-900 bg-stone-900 text-white"
                 : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900"
@@ -207,7 +256,7 @@ export default function AiClusterPage() {
           >
             Theo nhãn thực
           </button>
-          <label className="ml-2 inline-flex items-center gap-1.5 text-[11.5px] text-stone-600">
+          <label className="ml-2 inline-flex items-center gap-1.5 text-xs text-stone-600">
             <input
               type="checkbox"
               checked={showHulls}
@@ -227,11 +276,11 @@ export default function AiClusterPage() {
               <h2 className="font-serif text-lg font-semibold text-stone-900">
                 Không gian đặc trưng (PCA)
               </h2>
-              <p className="mt-0.5 text-[11px] text-stone-500">
+              <p className="mt-0.5 text-xs text-stone-600">
                 Mỗi điểm là một bài mẫu; khoảng cách phản ánh độ giống nhau của 10 chỉ số.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-[10.5px] text-stone-500">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-stone-600">
               {colorMode === "cluster"
                 ? model.groups.map((group) => (
                     <button
@@ -312,7 +361,7 @@ export default function AiClusterPage() {
               <line x1={P} y1={H - P} x2={W - P} y2={H - P} stroke="#78716c" strokeWidth="1.5" />
               <line x1={P} y1={P} x2={P} y2={H - P} stroke="#78716c" strokeWidth="1.5" />
 
-              <text x={W / 2} y={H - 8} textAnchor="middle" className="fill-stone-500 text-[11px]">
+              <text x={W / 2} y={H - 8} textAnchor="middle" className="fill-stone-500 text-xs">
                 PC1 · {Math.round(model.explained[0] * 100)}% phương sai
               </text>
               <text
@@ -320,7 +369,7 @@ export default function AiClusterPage() {
                 y={H / 2}
                 textAnchor="middle"
                 transform={`rotate(-90 12 ${H / 2})`}
-                className="fill-stone-500 text-[11px]"
+                className="fill-stone-500 text-xs"
               >
                 PC2 · {Math.round(model.explained[1] * 100)}% phương sai
               </text>
@@ -361,7 +410,7 @@ export default function AiClusterPage() {
                       x={mapX(group.centroid.x)}
                       y={mapY(group.centroid.y) + 3.5}
                       textAnchor="middle"
-                      className="fill-stone-900 text-[10px] font-bold"
+                      className="fill-stone-900 text-xs font-bold"
                     >
                       C{group.id + 1}
                     </text>
@@ -411,7 +460,7 @@ export default function AiClusterPage() {
                         x={cx}
                         y={cy - 16}
                         textAnchor="middle"
-                        className="fill-stone-900 text-[10.5px] font-semibold"
+                        className="fill-stone-900 text-xs font-semibold"
                         style={{ pointerEvents: "none" }}
                       >
                         {point.sample.fileName}
@@ -421,7 +470,7 @@ export default function AiClusterPage() {
                       <text
                         x={cx + 12}
                         y={cy - 10}
-                        className="fill-stone-900 text-[10.5px] font-semibold"
+                        className="fill-stone-900 text-xs font-semibold"
                       >
                         {point.sample.fileName}
                       </text>
@@ -440,7 +489,7 @@ export default function AiClusterPage() {
         <aside className="flex min-w-0 flex-col gap-4">
           <section className="overflow-hidden border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 14 }}>
             <h2 className="font-serif text-base font-semibold text-stone-900">Cấu trúc cụm</h2>
-            <p className="mt-0.5 text-[11px] text-stone-500">
+            <p className="mt-0.5 text-xs text-stone-600">
               Bấm một cụm để làm nổi bật thành viên của nó.
             </p>
             <div className="mt-3 space-y-3">
@@ -467,18 +516,18 @@ export default function AiClusterPage() {
                         <span className="text-[13px] font-semibold text-stone-900">
                           {group.label}
                         </span>
-                        <span className="text-[11px] text-stone-500">
+                        <span className="text-xs text-stone-600">
                           {group.members.length} bài
                         </span>
                       </span>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${kindChipClass[group.dominantKind as SampleKind]}`}
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${kindChipClass[group.dominantKind as SampleKind]}`}
                       >
                         {group.members.filter((m) => m.sample.kind === group.dominantKind).length}/
                         {group.members.length} {kindLabels[group.dominantKind as SampleKind]}
                       </span>
                     </button>
-                    <p className="mt-1 text-[10.5px] text-stone-500">
+                    <p className="mt-1 text-xs text-stone-600">
                       AI TB {Math.round(group.meanAi * 100)}% · chú thích TB{" "}
                       {Math.round(group.meanCommentRatio * 100)}%
                     </p>
@@ -488,7 +537,7 @@ export default function AiClusterPage() {
                           key={member.sample.id}
                           type="button"
                           onClick={() => selectPoint(member)}
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] transition-colors ${
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs transition-colors ${
                             selectedId === member.sample.id
                               ? "border-stone-900 bg-stone-900 text-white"
                               : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900"
@@ -518,45 +567,45 @@ export default function AiClusterPage() {
                   <p className="font-serif text-[15px] font-semibold text-stone-900">
                     {selectedPoint.sample.title}
                   </p>
-                  <p className="font-mono text-[10.5px] text-stone-400">
+                  <p className="font-mono text-xs text-stone-500">
                     {selectedPoint.sample.fileName} · {selectedPoint.sample.className}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${kindChipClass[selectedPoint.sample.kind as SampleKind]}`}
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${kindChipClass[selectedPoint.sample.kind as SampleKind]}`}
                   >
                     {kindLabels[selectedPoint.sample.kind as SampleKind]}
                   </span>
-                  <span className={`text-[11px] font-semibold ${verdictClass(selectedAnalysis)}`}>
+                  <span className={`text-xs font-semibold ${verdictClass(selectedAnalysis)}`}>
                     {verdictLabel(selectedAnalysis)}
                   </span>
                 </div>
-                <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-                  <dt className="text-stone-400">Cụm</dt>
+                <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                  <dt className="text-stone-500">Cụm</dt>
                   <dd className="font-semibold text-stone-800">C{selectedPoint.cluster + 1}</dd>
-                  <dt className="text-stone-400">Chú thích</dt>
+                  <dt className="text-stone-500">Chú thích</dt>
                   <dd className="font-semibold text-stone-800">
                     {Math.round(selectedAnalysis.metrics.commentRatio * 100)}%
                   </dd>
-                  <dt className="text-stone-400">Tên biến TB</dt>
+                  <dt className="text-stone-500">Tên biến TB</dt>
                   <dd className="font-semibold text-stone-800">
                     {selectedAnalysis.metrics.variableNameLength.toFixed(1)}
                   </dd>
-                  <dt className="text-stone-400">Khoảng cách</dt>
+                  <dt className="text-stone-500">Khoảng cách</dt>
                   <dd className="font-semibold text-stone-800">
                     {selectedPoint.distanceToCentroid.toFixed(2)}
                   </dd>
                 </dl>
                 <Link
                   to={`/ai-detect/analyze?mau=${selectedPoint.sample.id}`}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
                 >
                   <FaMagnifyingGlassChart /> Mở phân tích
                 </Link>
               </div>
             ) : (
-              <p className="mt-2 text-[11.5px] leading-relaxed text-stone-500">
+              <p className="mt-2 text-xs leading-relaxed text-stone-600">
                 Nhấn một điểm trên biểu đồ hoặc một bài trong danh sách cụm để xem chi tiết và mở
                 trang phân tích.
               </p>
@@ -570,14 +619,14 @@ export default function AiClusterPage() {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
           <div>
             <h2 className="flex items-center gap-2 font-serif text-lg font-semibold text-stone-900">
-              <FaShareNodes className="text-stone-400" /> Mạng tương đồng
+              <FaShareNodes className="text-stone-500" /> Mạng tương đồng
             </h2>
-            <p className="mt-0.5 text-[11px] text-stone-500">
+            <p className="mt-0.5 text-xs text-stone-600">
               Mỗi cạnh nối hai bài gần nhau nhất trong không gian đặc trưng; độ đậm thể hiện mức
               tương đồng.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-[10.5px] text-stone-500">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-stone-600">
             {model.groups.map((group) => (
               <span key={group.id} className="inline-flex items-center gap-1.5">
                 <span
@@ -645,7 +694,7 @@ export default function AiClusterPage() {
                     x={cx}
                     y={cy + 22}
                     textAnchor="middle"
-                    className="fill-stone-600 text-[9px]"
+                    className="fill-stone-600 text-xs"
                   >
                     {point.sample.fileName.replace(/\.[^.]+$/, "")}
                   </text>
@@ -665,9 +714,9 @@ export default function AiClusterPage() {
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
             <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-stone-900">
-              <FaDiagramProject className="text-stone-400" /> Vì sao AI và người viết tách nhau?
+              <FaDiagramProject className="text-stone-500" /> Vì sao AI và người viết tách nhau?
             </h2>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-600">
               PCA nén 10 chỉ số thành hai trục. Các thanh dưới đây cho biết chỉ số nào đóng góp
               mạnh nhất vào từng trục, giúp giải thích cụm mà không cần đọc toàn bộ hồ sơ chỉ số.
             </p>
@@ -687,7 +736,7 @@ export default function AiClusterPage() {
                 <div className="mt-2 space-y-2">
                   {top.map((item) => (
                     <div key={item.key} className="flex items-center gap-2">
-                      <span className="w-32 shrink-0 truncate text-[11px] text-stone-600">
+                      <span className="w-32 shrink-0 truncate text-xs text-stone-600">
                         {item.label}
                       </span>
                       <div className="relative h-2 flex-1 bg-stone-100">
@@ -702,7 +751,7 @@ export default function AiClusterPage() {
                           }}
                         />
                       </div>
-                      <span className="w-10 shrink-0 text-right font-mono text-[10.5px] text-stone-500">
+                      <span className="w-10 shrink-0 text-right font-mono text-xs text-stone-600">
                         {item.value >= 0 ? "+" : ""}
                         {item.value.toFixed(2)}
                       </span>
@@ -714,7 +763,7 @@ export default function AiClusterPage() {
           })}
         </div>
 
-        <p className="mt-4 text-[11px] leading-relaxed text-stone-500">
+        <p className="mt-4 text-xs leading-relaxed text-stone-600">
           PC1 chủ yếu phản ánh {model.loadings.pc1[0].label.toLowerCase()} và{" "}
           {model.loadings.pc1[1].label.toLowerCase()}; PC2 phản ánh{" "}
           {model.loadings.pc2[0].label.toLowerCase()} và{" "}
@@ -724,7 +773,7 @@ export default function AiClusterPage() {
         </p>
       </section>
 
-      <p className="text-[11px] leading-relaxed text-stone-400">
+      <p className="text-xs leading-relaxed text-stone-500">
         Phân cụm là mô hình heuristic trên 10 chỉ số đã chuẩn hoá, dùng để trực quan hoá xu
         hướng chứ không phải kết luận chắc chắn. Silhouette đo mức tách cụm trong không gian đặc
         trưng; giá trị càng gần 1 càng tách rõ.

@@ -59,7 +59,7 @@ export default function InputPage() {
             className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1 cursor-pointer"
           >
             <span>Base code</span>{" "}
-            <i className="fa-solid fa-chevron-down text-[10px]"></i>
+            <i className="fa-solid fa-chevron-down text-xs"></i>
           </button>
         </div>
 

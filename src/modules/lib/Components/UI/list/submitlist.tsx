@@ -43,8 +43,8 @@ interface SubmissionsListProps {
 }
 
 const SubmissionsList: React.FC<SubmissionsListProps> = ({
-  title = "Submissions",
-  description = "Highlights the most suspicious individual submissions, useful for exams.",
+  title = "Bài nộp",
+  description = "Các bài nộp có mức tương đồng cao nhất, dùng để rà soát trước khi chấm.",
   submissions = [
     { id: "1", fileName: "064.c", label: "plagiarism", similarity: 97 },
     { id: "2", fileName: "026.c", label: "plagiarism", similarity: 97 },
@@ -52,26 +52,35 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
     { id: "4", fileName: "051.c", label: "plagiarism", similarity: 88 },
     { id: "5", fileName: "040.c", label: "innocent", similarity: 88 },
   ],
-  viewAllText = "View all",
+  viewAllText = "Xem tất cả",
   viewAllCount = 79,
   onViewAllClick,
-  titleColor = "text-gray-900",
-  descriptionColor = "text-gray-500",
-  fileNameColor = "text-gray-700",
-  linkColor = "text-blue-600",
+  titleColor = "text-stone-900",
+  descriptionColor = "text-stone-600",
+  fileNameColor = "text-stone-800",
+  linkColor = "text-stone-700",
   cardBgColor = "bg-white",
-  plagiarismColor = "text-orange-600",
-  plagiarismBgColor = "bg-orange-500",
-  innocentColor = "text-blue-600",
-  innocentBgColor = "bg-blue-500",
+  plagiarismColor = "text-red-700",
+  plagiarismBgColor = "bg-red-500",
+  innocentColor = "text-stone-700",
+  innocentBgColor = "bg-stone-500",
   customLabels,
-  progressBarBgColor = "bg-gray-200",
-  progressBarFillColor = "bg-gray-500",
-  progressBarTextColor = "text-gray-900",
+  progressBarBgColor = "bg-stone-200",
+  progressBarFillColor = "bg-stone-600",
+  progressBarTextColor = "text-stone-900",
   showInfoIcon = true,
   showViewAll = true,
   maxDisplayItems = 10,
 }) => {
+  const labelText = (label: string) =>
+    label === "plagiarism"
+      ? "Cần xem lại"
+      : label === "suspicious"
+        ? "Nghi ngờ"
+        : label === "innocent"
+          ? "Không có dấu hiệu"
+          : label;
+
   const getLabelColors = (label: string) => {
     if (customLabels?.[label]) {
       return customLabels[label];
@@ -82,7 +91,7 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
     if (label === "innocent") {
       return { color: innocentColor, bgColor: innocentBgColor };
     }
-    return { color: "text-gray-600", bgColor: "bg-gray-500" };
+    return { color: "text-stone-700", bgColor: "bg-stone-500" };
   };
 
   const displaySubmissions = submissions.slice(0, maxDisplayItems);
@@ -90,24 +99,24 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
 
   return (
     <div
-      className={`${cardBgColor} rounded-lg shadow-md border border-gray-200 p-6`}
+      className={`${cardBgColor} rounded-lg shadow-sm border border-stone-200 p-6`}
     >
       {/* Header */}
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
           <h2 className={`text-xl font-semibold ${titleColor}`}>{title}</h2>
           {showInfoIcon && (
-            <FaInfoCircle className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+            <FaInfoCircle className="w-5 h-5 text-stone-600 cursor-help hover:text-stone-900 transition-colors" />
           )}
         </div>
         <p className={`text-sm ${descriptionColor}`}>{description}</p>
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-12 gap-4 mb-3 text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">
-        <div className="col-span-4">Submission</div>
-        <div className="col-span-4">Label</div>
-        <div className="col-span-4 text-right">Highest similarity</div>
+      <div className="grid grid-cols-12 gap-4 mb-3 text-sm font-semibold text-stone-700 border-b border-stone-200 pb-2">
+        <div className="col-span-4">Bài nộp</div>
+        <div className="col-span-4">Trạng thái</div>
+        <div className="col-span-4 text-right">Tương đồng cao nhất</div>
       </div>
 
       {/* Submissions List */}
@@ -118,8 +127,8 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
             <div
               key={submission.id}
               className={`grid grid-cols-12 gap-4 items-center py-3 px-2 rounded-md transition-colors ${
-                index % 2 === 0 ? "bg-gray-50" : "bg-white"
-              } hover:bg-gray-100`}
+                index % 2 === 0 ? "bg-stone-50" : "bg-white"
+              } hover:bg-stone-100`}
             >
               {/* File Name */}
               <div className={`col-span-4 font-medium ${fileNameColor}`}>
@@ -132,7 +141,7 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
                   className={`w-3 h-3 rounded-full ${labelColors.bgColor}`}
                 />
                 <span className={`text-sm ${labelColors.color}`}>
-                  {submission.label}
+                  {labelText(submission.label)}
                 </span>
               </div>
 
@@ -164,7 +173,7 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
           onClick={onViewAllClick}
           className={`mt-4 flex items-center justify-center gap-2 text-sm font-medium ${linkColor} hover:opacity-80 transition-opacity bg-transparent border-none cursor-pointer w-full`}
         >
-          {viewAllText} {viewAllCount} submissions
+          {viewAllText} {viewAllCount} bài
           <FaChevronRight className="w-4 h-4" />
         </button>
       )}
