@@ -1,11 +1,52 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --font-sans: "Inter", ui-sans-system, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", Consolas, Menlo, monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "Fira Code", Consolas, Menlo, monospace;
+  --radius-card: 10px;
 }
 
-html { color-scheme: light; }
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+:root {
+  /* Màu tô đoạn giống nhau ở trang so sánh (đổi theo theme). */
+  --cmp-a-strong: #86efac;
+  --cmp-a-weak: #bbf7d0;
+  --cmp-a-badge: #dcfce7;
+  --cmp-a-text: #166534;
+  --cmp-b-strong: #fca5a5;
+  --cmp-b-weak: #fecaca;
+  --cmp-b-badge: #fee2e2;
+  --cmp-b-text: #991b1b;
+
+  /* Màu chấm trên biểu đồ quan hệ. */
+  --node-innocent: #1976b8;
+  --node-innocent-soft: rgba(25, 118, 184, 0.12);
+  --node-plagiarism: #d97706;
+  --node-plagiarism-soft: rgba(245, 158, 11, 0.18);
+}
+
+html.dark {
+  color-scheme: dark;
+  --cmp-a-strong: rgba(16, 185, 129, 0.34);
+  --cmp-a-weak: rgba(16, 185, 129, 0.2);
+  --cmp-a-badge: rgba(6, 78, 59, 0.42);
+  --cmp-a-text: #6ee7b7;
+  --cmp-b-strong: rgba(239, 68, 68, 0.34);
+  --cmp-b-weak: rgba(239, 68, 68, 0.2);
+  --cmp-b-badge: rgba(127, 29, 29, 0.42);
+  --cmp-b-text: #fca5a5;
+
+  --node-innocent: #38bdf8;
+  --node-innocent-soft: rgba(56, 189, 248, 0.2);
+  --node-plagiarism: #fbbf24;
+  --node-plagiarism-soft: rgba(251, 191, 36, 0.24);
+}
 
 body {
   background: #f6f7f5;
@@ -14,13 +55,478 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: #d6e4f0; }
+::selection {
+  background: #d6e4f0;
+}
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5d1; border-radius: 999px; border: 2px solid #ffffff; }
-::-webkit-scrollbar-thumb:hover { background: #a8b5b0; }
+html.dark ::selection {
+  background: rgba(245, 158, 11, 0.3);
+}
 
-input[type="range"]:focus { outline: none; }
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5d1;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8b5b0;
+}
 
-textarea { resize: vertical; }
+html.dark ::-webkit-scrollbar-thumb {
+  background: #4a4643;
+  border-color: #1b1a19;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* ---------------------------------------------------------------- Focus */
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #1c1917 !important;
+  outline-offset: 2px !important;
+}
+.dark :where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline-color: #f5f5f4 !important;
+}
+
+/* ------------------------------------------------------------- Sidebar */
+.hamburger-bar__item:hover:not([aria-current="page"]) {
+  background: var(--hb-hover, #f5f5f4) !important;
+}
+
+/* -------------------------------------------------------- Animations */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.toast-in {
+  position: relative;
+  animation: toast-in 180ms ease-out;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.modal-in {
+  animation: modal-in 160ms ease-out;
+}
+
+@keyframes guide-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.guide-in {
+  animation: guide-in 150ms ease-out;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.skeleton {
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .toast-in,
+  .modal-in,
+  .guide-in,
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------------- CodeMirror */
+.cm-editor {
+  height: 100%;
+}
+.cm-editor.cm-focused {
+  outline: none;
+}
+.cm-tone-ai {
+  background: rgba(245, 158, 11, 0.12);
+}
+.cm-tone-human {
+  background: rgba(16, 185, 129, 0.1);
+}
+.dark .cm-tone-ai {
+  background: rgba(245, 158, 11, 0.16);
+}
+.dark .cm-tone-human {
+  background: rgba(16, 185, 129, 0.14);
+}
+.cm-searchPanel {
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------- Dark mode
+   Ứng dụng dùng bảng màu stone/white nhất quán. Các override dưới đây
+   chuyển bề mặt sáng sang tông than chì mà không phải sửa từng trang. */
+.dark body {
+  background:
+    radial-gradient(1100px 560px at 15% -10%, rgba(245, 158, 11, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(59, 130, 246, 0.05), transparent 60%),
+    #0f0f0e;
+  color: #e7e5e4;
+}
+
+.dark .bg-white {
+  background-color: #1b1a19;
+}
+.dark .bg-stone-50 {
+  background-color: #201f1e;
+}
+.dark .bg-stone-100 {
+  background-color: #2a2827;
+}
+.dark .bg-stone-200 {
+  background-color: #3a3735;
+}
+.dark .bg-stone-900 {
+  background-color: #1c1917;
+}
+.dark .bg-stone-800 {
+  background-color: #292524;
+}
+.dark .bg-\[\#fbfbfa\],
+.dark .bg-\[\#fbfbf9\],
+.dark .bg-\[\#f6f7f5\] {
+  background-color: #151413;
+}
+.dark .bg-stone-50\/60 {
+  background-color: rgba(32, 31, 30, 0.6);
+}
+.dark .bg-stone-50\/95 {
+  background-color: rgba(32, 31, 30, 0.95);
+}
+.dark .bg-stone-100\/90 {
+  background-color: rgba(42, 40, 39, 0.9);
+}
+.dark .bg-stone-100\/80 {
+  background-color: rgba(42, 40, 39, 0.8);
+}
+.dark .bg-stone-200\/80 {
+  background-color: rgba(58, 55, 53, 0.8);
+}
+.dark .hover\:bg-white:hover {
+  background-color: #232120;
+}
+.dark .hover\:bg-stone-50:hover {
+  background-color: #232120;
+}
+.dark .hover\:bg-stone-100:hover {
+  background-color: #2a2827;
+}
+.dark .hover\:bg-stone-200:hover {
+  background-color: #3a3735;
+}
+
+.dark .text-stone-900,
+.dark .text-gray-900 {
+  color: #f5f5f4;
+}
+.dark .text-stone-800,
+.dark .text-gray-800 {
+  color: #e7e5e4;
+}
+.dark .text-stone-700,
+.dark .text-gray-700 {
+  color: #d6d3d1;
+}
+.dark .text-stone-600,
+.dark .text-gray-600 {
+  color: #b8b2ac;
+}
+.dark .text-stone-500,
+.dark .text-gray-500 {
+  color: #a8a29e;
+}
+.dark .text-stone-400,
+.dark .text-gray-400 {
+  color: #8c8681;
+}
+.dark .text-stone-300,
+.dark .text-gray-300 {
+  color: #78716c;
+}
+
+.dark input[type="checkbox"],
+.dark input[type="radio"],
+.dark input[type="range"] {
+  accent-color: #d6d3d1;
+}
+
+.dark .border-stone-100,
+.dark .border-gray-100 {
+  border-color: #2a2827;
+}
+.dark .border-stone-200,
+.dark .border-gray-200 {
+  border-color: #3a3735;
+}
+.dark .border-stone-300,
+.dark .border-gray-300 {
+  border-color: #4a4643;
+}
+.dark .divide-stone-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #2a2827;
+}
+.dark .divide-stone-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #3a3735;
+}
+.dark .border-stone-900 {
+  border-color: #f5f5f4;
+}
+
+.dark .bg-red-50,
+.dark .bg-red-50\/60 {
+  background-color: rgba(127, 29, 29, 0.24);
+}
+.dark .bg-red-100 {
+  background-color: rgba(127, 29, 29, 0.36);
+}
+.dark .text-red-700,
+.dark .text-red-600 {
+  color: #fca5a5;
+}
+.dark .ring-red-200 {
+  --tw-ring-color: rgba(248, 113, 113, 0.35);
+}
+
+.dark .bg-amber-50 {
+  background-color: rgba(120, 53, 15, 0.26);
+}
+.dark .bg-amber-100 {
+  background-color: rgba(120, 53, 15, 0.38);
+}
+.dark .text-amber-700,
+.dark .text-amber-800 {
+  color: #fbbf24;
+}
+.dark .ring-amber-200 {
+  --tw-ring-color: rgba(251, 191, 36, 0.35);
+}
+
+.dark .bg-emerald-50 {
+  background-color: rgba(6, 78, 59, 0.28);
+}
+.dark .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.4);
+}
+.dark .text-emerald-700,
+.dark .text-emerald-800 {
+  color: #6ee7b7;
+}
+.dark .ring-emerald-200 {
+  --tw-ring-color: rgba(52, 211, 153, 0.35);
+}
+
+.dark .bg-blue-50 {
+  background-color: rgba(30, 58, 138, 0.28);
+}
+.dark .text-blue-600,
+.dark .text-blue-700 {
+  color: #93c5fd;
+}
+.dark .ring-blue-200 {
+  --tw-ring-color: rgba(96, 165, 250, 0.35);
+}
+.dark .ring-stone-200 {
+  --tw-ring-color: #3a3735;
+}
+
+/* SVG dùng màu cứng trong vài biểu đồ */
+.dark svg [fill="#fbfbfa"] {
+  fill: #151413;
+}
+.dark svg [fill="#292524"] {
+  fill: #e7e5e4;
+}
+.dark svg [stroke="#e7e5e4"] {
+  stroke: #3a3735;
+}
+.dark svg [stroke="#d6d3d1"] {
+  stroke: #4a4643;
+}
+.dark svg [fill="#ffffff"] {
+  fill: #1b1a19;
+}
+.dark svg [fill="#f5f5f4"] {
+  fill: #232120;
+}
+
+/* Viền màu ngữ nghĩa trên nền tối */
+.dark .border-red-200 {
+  border-color: rgba(248, 113, 113, 0.32);
+}
+.dark .border-amber-200 {
+  border-color: rgba(251, 191, 36, 0.32);
+}
+.dark .border-emerald-200 {
+  border-color: rgba(52, 211, 153, 0.32);
+}
+.dark .border-blue-200 {
+  border-color: rgba(96, 165, 250, 0.32);
+}
+
+/* Trạng thái hover của các nút màu ngữ nghĩa */
+.dark .hover\:bg-red-50:hover {
+  background-color: rgba(127, 29, 29, 0.28);
+}
+.dark .hover\:bg-amber-50:hover {
+  background-color: rgba(120, 53, 15, 0.3);
+}
+.dark .hover\:bg-emerald-50:hover {
+  background-color: rgba(6, 78, 59, 0.32);
+}
+.dark .hover\:bg-blue-50:hover {
+  background-color: rgba(30, 58, 138, 0.32);
+}
+
+/* Chữ màu ngữ nghĩa dùng cho số liệu / nhãn nhỏ */
+.dark .text-amber-600 {
+  color: #fbbf24;
+}
+.dark .text-emerald-600 {
+  color: #34d399;
+}
+.dark .text-red-800 {
+  color: #fca5a5;
+}
+
+/* Mark highlight khi tìm kiếm */
+.dark .bg-amber-200 {
+  background-color: rgba(245, 158, 11, 0.36);
+}
+.dark mark {
+  color: #f5f5f4;
+}
+
+/* CodeMirror: hoà vào bảng màu than chì thay vì nền xanh của oneDark */
+.dark .cm-editor {
+  background-color: #141312;
+}
+.dark .cm-gutters {
+  background-color: #171615;
+  border-color: #2a2827;
+  color: #8c8681;
+}
+.dark .cm-activeLine {
+  background-color: rgba(255, 255, 255, 0.035);
+}
+.dark .cm-activeLineGutter {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #e7e5e4;
+}
+.dark .cm-content {
+  caret-color: #fbbf24;
+}
+.dark .cm-cursor,
+.dark .cm-dropCursor {
+  border-left-color: #fbbf24;
+}
+.dark .cm-selectionBackground {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+}
+.dark .cm-panels {
+  background-color: #171615;
+  border-color: #2a2827;
+  color: #e7e5e4;
+}
+.dark .cm-searchMatch {
+  background-color: rgba(245, 158, 11, 0.28);
+}
+.dark .cm-searchMatch.cm-searchMatch-selected {
+  background-color: rgba(245, 158, 11, 0.5);
+}
+
+/* ------------------------------------------------ Route progress bar */
+@keyframes route-progress {
+  from { transform: translateX(-40%); }
+  to { transform: translateX(120%); }
+}
+.route-progress {
+  animation: route-progress 450ms ease-out;
+}
+
+/* ------------------------------------------------ Density + color-blind */
+:root {
+  --row-pad-y: 16px;
+}
+html[data-density="compact"] {
+  --row-pad-y: 10px;
+}
+html[data-colorblind="1"] .cmp-match-line {
+  border-bottom-style: solid !important;
+}
+
+/* Contrast: text xám trên nền xám trong dark đã được nâng ở trên,
+   thêm viền phân cách cho chip/badge trong compact mode. */
+html[data-density="compact"] .text-xs {
+  letter-spacing: 0.01em;
+}
+
+/* ------------------------------------------------ Print: báo cáo gọn trên giấy */
+@media print {
+  :root { --row-pad-y: 10px; }
+  html, body { background: #ffffff !important; color: #1c1917 !important; }
+  /* Ẩn header/sidebar/toast/guidance/controls để in chỉ còn nội dung. */
+  header, nav, aside, .route-progress,
+  [role="dialog"][aria-label^="Hướng dẫn"],
+  [aria-label="Thông báo"],
+  button {
+    display: none !important;
+  }
+  [role="dialog"], [aria-label="Cài đặt"] { display: none !important; }
+  main, .space-y-5, .space-y-6 { max-width: 100% !important; padding: 0 !important; }
+  section, div[class*="border"] {
+    break-inside: avoid;
+    border-color: #d6d3d1 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+  svg { max-width: 100%; height: auto; }
+  .grid { gap: 12px !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

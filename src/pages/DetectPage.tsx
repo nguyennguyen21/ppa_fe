@@ -5,6 +5,7 @@ import {
   FaArrowTrendDown,
   FaArrowTrendUp,
   FaCheck,
+  FaChevronDown,
   FaCircleInfo,
   FaCode,
   FaFileArrowUp,
@@ -17,6 +18,12 @@ import {
 } from "react-icons/fa6";
 import { samples, type SampleKind } from "../data/aiSamples";
 import { findLibrarySample, samplesOfKind, type LibrarySample } from "../data/aiSampleLibrary";
+import CodeEditor from "../modules/plagiarism/components/CodeEditor";
+import { InfoTip } from "../modules/lib/Components/UI/feedback/Tooltip";
+import { useBackendData } from "../modules/lib/hook/backend-data-context";
+import { api, type AiHighlightResponseDto } from "../lib/api";
+import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
+import { useConfirm } from "../modules/lib/Components/UI/feedback/ConfirmDialog";
 import {
   analyzeCode,
   analyzeLine,
@@ -26,7 +33,6 @@ import {
   type AnalysisResult,
   type Verdict,
 } from "../modules/plagiarism/utils/aiClassify";
-
 const verdictStyle: Record<
   Verdict,
   { label: string; caption: string; icon: typeof FaRobot; text: string; bg: string; ring: string }
@@ -117,6 +123,10 @@ export default function DetectPage() {
   const initialKind = kindFromParam(mauParam);
   const initialEntry = resolveSampleParam(mauParam);
 
+  const { getSnippetCode } = useBackendData();
+  const [beHighlight, setBeHighlight] = useState<AiHighlightResponseDto | null>(null);
+  const beId = mauParam && mauParam.startsWith("be:") ? mauParam.slice(3) : null;
+
   const [code, setCode] = useState(initialEntry?.code ?? "");
   const [sample, setSample] = useState<SampleKind | "custom">(
     initialEntry?.kind ?? initialKind,
@@ -124,12 +134,72 @@ export default function DetectPage() {
   const [sampleId, setSampleId] = useState<string | null>(initialEntry?.id ?? null);
   const [editing, setEditing] = useState(!initialEntry);
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(
+    () => new Set(METRIC_GROUPS.slice(0, 2).map((group) => group.id)),
+  );
   const fileRef = useRef<HTMLInputElement>(null);
-  const editorRef = useRef<HTMLTextAreaElement>(null);
-  const gutterRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
+  const toast = useToast();
+  const confirm = useConfirm();
 
-  const analysis = useMemo(() => analyzeCode(code), [code]);
+  // Nạp code THẬT từ backend cho mẫu từ kho kết quả AI của BE (id dạng be:<codeId>).
+  useEffect(() => {
+    if (!beId) return;
+    let alive = true;
+    void getSnippetCode(beId).then((text) => {
+      if (!alive || text == null) return;
+      setCode(text);
+      setSample("custom");
+      setSampleId(null);
+      setSelectedLine(null);
+      setEditing(false);
+      setSearchParams({ mau: "custom" }, { replace: true });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [beId, getSnippetCode, mauParam, setSearchParams]);
+
+  const localAnalysis = useMemo(() => analyzeCode(code), [code]);
+  const analysis = useMemo<AnalysisResult>(() => {
+    const base = localAnalysis;
+    if (!beHighlight) return base;
+    const confidence = beHighlight.overallConfidence ?? base.confidence;
+    const verdict: Verdict = beHighlight.overallPrediction === "ai" ? "ai" : beHighlight.overallPrediction === "human" ? "human" : "unclear";
+    const aiProbability = verdict === "ai" ? confidence : verdict === "human" ? 1 - confidence : confidence;
+    const humanProbability = verdict === "ai" ? 1 - confidence : verdict === "human" ? confidence : 1 - confidence;
+    const notes = [...base.notes];
+    notes.push(`Backend: ${beHighlight.overallPrediction ?? "unknown"} (${Math.round((beHighlight.overallConfidence ?? 0) * 100)}%) · heuristic ${beHighlight.heuristicScore ?? 0} · ${beHighlight.suspiciousLineCount ?? 0}/${beHighlight.totalLines ?? 0} dòng nghiêng`);
+    const merged: AnalysisResult = {
+      ...base,
+      verdict,
+      confidence,
+      aiProbability,
+      humanProbability,
+      notes,
+    };
+    return merged;
+  }, [localAnalysis, beHighlight]);
+
+  // Phân tích AI trực tiếp từ backend (POST /api/v1/ai/highlight) — debounce khi user sửa code.
+  useEffect(() => {
+    if (code.trim() === "") {
+      setBeHighlight(null);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void api
+        .highlightAdHoc(code, analysis.language, 0.5)
+        .then((response) => {
+          setBeHighlight(response);
+        })
+        .catch(() => {
+          // Bỏ qua lỗi mạng — vẫn dùng phân tích cục bộ.
+        });
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [code, analysis.language]);
+
   const style = verdictStyle[analysis.verdict];
   const VerdictIcon = style.icon;
   const maxWeight = Math.max(0.1, ...analysis.signals.map((s) => Math.abs(s.weight)));
@@ -139,27 +209,29 @@ export default function DetectPage() {
     return code.replace(/\r\n?/g, "\n").split("\n");
   }, [code]);
 
-  const insights = useMemo(
-    () => lines.map((line, index) => analyzeLine(line, analysis.language, index + 1)),
-    [lines, analysis.language],
-  );
+  const insights = useMemo(() => {
+    const beScores = new Map<number, number>();
+    if (beHighlight?.suspiciousLines) {
+      for (const line of beHighlight.suspiciousLines) {
+        beScores.set(line.lineNumber, line.score);
+      }
+    }
+    return lines.map((line, index) => {
+      const insight = analyzeLine(line, analysis.language, index + 1);
+      const beScore = beScores.get(insight.line);
+      if (beScore != null && beScore >= 0.5 && insight.tone !== "ai") {
+        return { ...insight, tone: "ai" as const };
+      }
+      return insight;
+    });
+  }, [lines, analysis.language, beHighlight]);
 
   const aiLineCount = insights.filter((item) => item.tone === "ai").length;
   const humanLineCount = insights.filter((item) => item.tone === "human").length;
+  const lineTones = useMemo(() => insights.map((item) => item.tone), [insights]);
   const activeSample = sampleId ? findLibrarySample(sampleId) : null;
   const currentInsight =
     selectedLine !== null ? insights[selectedLine - 1] ?? null : null;
-
-  // Đổi mẫu trên URL (ví dụ mở từ kho mẫu) thì nạp lại nội dung tương ứng.
-  useEffect(() => {
-    const entry = resolveSampleParam(mauParam);
-    if (!entry) return;
-    setCode(entry.code);
-    setSample(entry.kind);
-    setSampleId(entry.id);
-    setEditing(false);
-    setSelectedLine(null);
-  }, [mauParam]);
 
   const loadSample = (kind: SampleKind) => {
     const entry = samplesOfKind(kind)[0];
@@ -183,12 +255,6 @@ export default function DetectPage() {
     setSearchParams({ mau: "custom" }, { replace: true });
   };
 
-  const syncScroll = () => {
-    if (gutterRef.current && editorRef.current) {
-      gutterRef.current.scrollTop = editorRef.current.scrollTop;
-    }
-  };
-
   const selectLine = (line: number) => {
     const isFirstSelection = selectedLine === null;
     setSelectedLine(line);
@@ -199,18 +265,44 @@ export default function DetectPage() {
     }
   };
 
+  const toggleGroup = (id: string) => {
+    setOpenGroups((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearCode = async () => {
+    const ok = await confirm({
+      title: "Xoá nội dung mã nguồn?",
+      description: "Đoạn code hiện tại sẽ bị xoá khỏi trình phân tích. Thao tác này không thể hoàn tác.",
+      confirmLabel: "Xoá nội dung",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setCode("");
+    setSample("custom");
+    setSampleId(null);
+    setSelectedLine(null);
+    setEditing(true);
+    setSearchParams({ mau: "custom" }, { replace: true });
+    toast.info("Đã xoá nội dung", "Bạn có thể dán code mới hoặc nạp một tệp khác.");
+  };
+
   const codeHeader = (
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 px-4 py-3">
       <div className="flex flex-wrap items-center gap-2">
-        <FaCode className="text-stone-400" />
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+        <FaCode className="text-stone-500" />
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-600">
           Mã nguồn
         </span>
-        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10.5px] font-semibold text-stone-600">
+        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600">
           {languageLabel[analysis.language]}
         </span>
         {activeSample && (
-          <span className="font-mono text-[10.5px] text-stone-400">{activeSample.fileName}</span>
+          <span className="font-mono text-xs text-stone-500">{activeSample.fileName}</span>
         )}
       </div>
       <div className="flex flex-wrap items-center gap-1">
@@ -220,10 +312,11 @@ export default function DetectPage() {
             type="button"
             title={s.hint}
             onClick={() => loadSample(s.id)}
-            className={`rounded px-2 py-1 text-[11px] font-semibold transition-colors ${
+            data-guide="detect-sample"
+            className={`rounded px-2 py-1 text-xs font-semibold transition-colors ${
               sample === s.id
                 ? "bg-stone-900 text-white"
-                : "text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+                : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
             }`}
           >
             {s.label}
@@ -233,7 +326,7 @@ export default function DetectPage() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-semibold text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+          className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold text-stone-600 hover:bg-stone-100 hover:text-stone-900"
         >
           <FaFileArrowUp /> Nạp file
         </button>
@@ -256,28 +349,28 @@ export default function DetectPage() {
       {/* Header */}
       <div className="border-b border-stone-200 pb-5">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
             CODEX / Phân loại
           </p>
         <div className="flex items-center gap-2">
           <Link
             to="/ai-detect/cum"
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 transition-colors hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
           >
             Mô hình cụm
           </Link>
           <Link
             to={sample === "custom" ? "/ai-detect/kho-mau" : `/ai-detect/kho-mau?loai=${sample}`}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 transition-colors hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
           >
-            <FaArrowLeft className="text-[10px]" /> Kho mẫu
+            <FaArrowLeft className="text-xs" /> Kho mẫu
           </Link>
         </div>
         </div>
         <h1 className="mt-2 flex items-center gap-2.5 font-serif text-3xl font-semibold tracking-tight text-stone-900">
-          <FaRobot className="text-stone-400" /> Phân biệt code AI và người viết
+          <FaRobot className="text-stone-500" /> Phân biệt code AI và người viết
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
           Trích xuất 34 chỉ số tĩnh rồi so sánh với xu hướng code do AI sinh và code viết tay.
           Nhấn vào một dòng trong khung mã để xem dòng đó nghiêng về phía nào và vì sao.
         </p>
@@ -292,44 +385,30 @@ export default function DetectPage() {
           {codeHeader}
 
           {editing ? (
-            <div className="flex h-[460px] min-h-0 overflow-hidden bg-[#fbfbfa]">
-              <div
-                ref={gutterRef}
-                className="w-12 shrink-0 select-none overflow-hidden border-r border-stone-200 bg-stone-50 py-3 text-right font-mono text-[11px] leading-[21px] text-stone-400"
-                aria-hidden="true"
-              >
-                {Array.from({ length: Math.max(1, lines.length) }, (_, i) => i + 1).map((n) => (
-                  <div key={n} className="pr-2">
-                    {n}
-                  </div>
-                ))}
-              </div>
-              <textarea
-                ref={editorRef}
+            <div className="h-[460px] min-h-0 overflow-hidden">
+              <CodeEditor
                 value={code}
-                onChange={(event) => {
-                  setCode(event.target.value);
+                onChange={(next) => {
+                  setCode(next);
                   setSample("custom");
                   setSampleId(null);
                   setSelectedLine(null);
                 }}
-                onScroll={syncScroll}
-                spellCheck={false}
-                wrap="off"
+                language={analysis.language}
+                lineTones={lineTones}
+                onLineClick={selectLine}
                 autoFocus
-                aria-label="Mã nguồn cần phân loại"
-                placeholder="Dán code vào đây, hoặc nạp một tệp từ máy…"
-                className="h-full min-w-0 flex-1 resize-none overflow-auto bg-transparent px-3 py-3 font-mono text-[12.5px] leading-[21px] text-stone-800 outline-none placeholder:text-stone-400"
+                ariaLabel="Mã nguồn cần phân loại"
               />
             </div>
           ) : lines.length > 0 ? (
             <>
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 px-4 py-2">
-                <p className="inline-flex items-center gap-1.5 text-[10.5px] text-stone-500">
-                  <FaCircleInfo className="text-stone-400" />
+                <p className="inline-flex items-center gap-1.5 text-xs text-stone-600">
+                  <FaCircleInfo className="text-stone-500" />
                   Nhấn vào một dòng để xem giải thích
                 </p>
-                <div className="flex items-center gap-3 text-[10.5px] font-medium text-stone-500">
+                <div className="flex items-center gap-3 text-xs font-medium text-stone-600">
                   <span className="inline-flex items-center gap-1.5">
                     <span className={`h-1.5 w-1.5 rounded-full ${toneMeta.ai.dot}`} /> AI
                   </span>
@@ -357,7 +436,7 @@ export default function DetectPage() {
                       }`}
                     >
                       <span
-                        className={`sticky left-0 z-10 flex w-[74px] shrink-0 select-none items-center justify-end gap-2 border-r border-stone-200 px-2 py-[1px] text-[11px] text-stone-400 ${
+                        className={`sticky left-0 z-10 flex w-[74px] shrink-0 select-none items-center justify-end gap-2 border-r border-stone-200 px-2 py-[1px] text-xs text-stone-500 ${
                           isSelected ? "bg-stone-200" : "bg-stone-50/95"
                         }`}
                       >
@@ -384,21 +463,21 @@ export default function DetectPage() {
             <div className="flex h-[300px] flex-col items-center justify-center gap-2 px-6 text-center">
               <FaCircleInfo className="text-stone-300" size={22} />
               <p className="font-serif text-lg font-semibold text-stone-900">Chưa có mã nguồn</p>
-              <p className="max-w-sm text-xs leading-relaxed text-stone-500">
+              <p className="max-w-sm text-xs leading-relaxed text-stone-600">
                 Nạp một tệp từ máy hoặc dùng một trong các mẫu của hệ thống để bắt đầu phân tích.
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => loadSample("ai")}
-                  className="rounded-md bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800"
+                  className="rounded-md bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
                 >
                   Dùng mẫu AI
                 </button>
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-700 hover:bg-stone-50"
+                  className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
                 >
                   Nạp file
                 </button>
@@ -407,7 +486,7 @@ export default function DetectPage() {
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 px-4 py-3">
-            <p className="text-[11.5px] text-stone-500">
+            <p className="text-xs text-stone-600">
               <span className="font-semibold text-stone-700">{analysis.codeLineCount}</span> dòng mã
               <span className="mx-1.5 text-stone-300">·</span>
               <span className="font-semibold text-stone-700">{analysis.functionCount}</span> hàm
@@ -428,7 +507,9 @@ export default function DetectPage() {
               <button
                 type="button"
                 onClick={() => setEditing((value) => !value)}
-                className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-semibold ${
+                data-guide="detect-edit"
+                aria-pressed={editing}
+                className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold ${
                   editing
                     ? "border-stone-900 bg-stone-900 text-white hover:bg-stone-800"
                     : "border-stone-300 bg-white text-stone-600 hover:bg-stone-50"
@@ -440,15 +521,9 @@ export default function DetectPage() {
               {code.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setCode("");
-                    setSample("custom");
-                    setSampleId(null);
-                    setSelectedLine(null);
-                    setEditing(true);
-                    setSearchParams({ mau: "custom" }, { replace: true });
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-stone-600 hover:bg-stone-50"
+                  onClick={() => void clearCode()}
+                  data-guide="detect-clear"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-50"
                 >
                   <FaXmark /> Xóa nội dung
                 </button>
@@ -463,10 +538,10 @@ export default function DetectPage() {
           style={{ borderRadius: 10 }}
         >
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
               Kết quả phân loại
             </p>
-            <span className="flex items-center gap-1.5 text-[10.5px] text-stone-400">
+            <span className="flex items-center gap-1.5 text-xs text-stone-500">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-600" /> trực tiếp
             </span>
           </div>
@@ -479,7 +554,7 @@ export default function DetectPage() {
             </span>
             <div className="min-w-0">
               <p className={`font-serif text-2xl font-semibold ${style.text}`}>{style.label}</p>
-              <p className="text-xs text-stone-500">{style.caption}</p>
+              <p className="text-xs text-stone-600">{style.caption}</p>
             </div>
           </div>
 
@@ -489,12 +564,12 @@ export default function DetectPage() {
                 {bigProbability(analysis)}
                 <span className="text-2xl">%</span>
               </p>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-stone-600">
                 {analysis.verdict === "human" ? "khả năng do người viết" : "khả năng do AI tạo"}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-stone-400">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                 Độ chắc chắn
               </p>
               <p className="text-sm font-semibold text-stone-800">
@@ -518,7 +593,7 @@ export default function DetectPage() {
                 style={{ left: `calc(${analysis.aiProbability * 100}% - 1px)` }}
               />
             </div>
-            <div className="mt-2 flex justify-between text-[11px] font-semibold">
+            <div className="mt-2 flex justify-between text-xs font-semibold">
               <span className="text-emerald-700">
                 Người viết {Math.round(analysis.humanProbability * 100)}%
               </span>
@@ -527,7 +602,7 @@ export default function DetectPage() {
           </div>
 
           <div className="mt-5 border-t border-stone-100 pt-4">
-            <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
               Tín hiệu nổi bật
             </p>
             {analysis.signals.length > 0 ? (
@@ -551,12 +626,12 @@ export default function DetectPage() {
                       <p className="text-[12.5px] font-medium leading-snug text-stone-800">
                         {signal.label}
                       </p>
-                      <p className="mt-0.5 text-[11px] leading-snug text-stone-500">
+                      <p className="mt-0.5 text-xs leading-snug text-stone-600">
                         {signal.detail}
                       </p>
                     </div>
                     <span
-                      className={`shrink-0 font-mono text-[11px] font-semibold ${
+                      className={`shrink-0 font-mono text-xs font-semibold ${
                         signal.weight > 0 ? "text-amber-700" : "text-emerald-700"
                       }`}
                     >
@@ -567,21 +642,21 @@ export default function DetectPage() {
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-xs leading-relaxed text-stone-500">
+              <p className="mt-3 text-xs leading-relaxed text-stone-600">
                 Chưa trích xuất được tín hiệu nào từ đoạn mã hiện tại.
               </p>
             )}
           </div>
 
           {analysis.notes.length > 0 && (
-            <div className="mt-4 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-[11px] leading-relaxed text-stone-500">
+            <div className="mt-4 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs leading-relaxed text-stone-600">
               {analysis.notes.map((note) => (
                 <p key={note}>{note}</p>
               ))}
             </div>
           )}
 
-          <p className="mt-auto pt-5 text-[10.5px] leading-relaxed text-stone-400">
+          <p className="mt-auto pt-5 text-xs leading-relaxed text-stone-500">
             Điểm số là ước lượng thống kê từ 34 chỉ số, không đủ để kết luận thay giảng viên.
             Nên đọc kèm tín hiệu và bối cảnh bài làm.
           </p>
@@ -596,28 +671,28 @@ export default function DetectPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 px-5 py-3.5">
           <div className="flex flex-wrap items-center gap-2">
-            <FaCode className="text-stone-400" />
+            <FaCode className="text-stone-500" />
             <h2 className="font-serif text-lg font-semibold text-stone-900">
               Giải thích dòng đang chọn
             </h2>
             {currentInsight && (
               <>
-                <span className="font-mono text-[11px] text-stone-400">
+                <span className="font-mono text-xs text-stone-500">
                   Dòng {currentInsight.line}
                 </span>
                 <span className="text-stone-300">/</span>
-                <span className="text-[11.5px] text-stone-500">{currentInsight.type}</span>
+                <span className="text-xs text-stone-600">{currentInsight.type}</span>
               </>
             )}
           </div>
           {currentInsight ? (
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold ring-1 ${toneMeta[currentInsight.tone].chip}`}
+              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${toneMeta[currentInsight.tone].chip}`}
             >
               {toneMeta[currentInsight.tone].label}
             </span>
           ) : (
-            <span className="text-[10.5px] text-stone-400">
+            <span className="text-xs text-stone-500">
               Chọn một dòng trong khung mã để bắt đầu
             </span>
           )}
@@ -657,12 +732,12 @@ export default function DetectPage() {
                       <p className="text-[12px] font-medium leading-snug text-stone-800">
                         {signal.label}
                       </p>
-                      <p className="mt-0.5 text-[11px] leading-snug text-stone-500">
+                      <p className="mt-0.5 text-xs leading-snug text-stone-600">
                         {signal.detail}
                       </p>
                     </div>
                     <span
-                      className={`shrink-0 font-mono text-[11px] font-semibold ${
+                      className={`shrink-0 font-mono text-xs font-semibold ${
                         signal.weight > 0 ? "text-amber-700" : "text-emerald-700"
                       }`}
                     >
@@ -673,7 +748,7 @@ export default function DetectPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs leading-relaxed text-stone-500">
+              <p className="text-xs leading-relaxed text-stone-600">
                 Dòng này không có tín hiệu đủ mạnh để nghiêng hẳn về một phía. Những dòng như vậy
                 thường là khai báo, dấu ngoặc hoặc câu lệnh trung tính.
               </p>
@@ -685,7 +760,7 @@ export default function DetectPage() {
             <p className="text-sm font-medium text-stone-700">
               Nhấn vào một dòng trong khung mã
             </p>
-            <p className="max-w-md text-xs leading-relaxed text-stone-500">
+            <p className="max-w-md text-xs leading-relaxed text-stone-600">
               Hệ thống sẽ giải thích dòng đó nghiêng về AI hay người viết, kèm các tín hiệu cụ thể
               như chú thích, khai báo kiểu, cách đặt tên hay định dạng.
             </p>
@@ -697,51 +772,65 @@ export default function DetectPage() {
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-200 pb-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
               Hồ sơ chỉ số
             </p>
             <h2 className="mt-1.5 font-serif text-2xl font-semibold tracking-tight text-stone-900">
               34 chỉ số được trích xuất
             </h2>
           </div>
-          <p className="text-xs text-stone-500">Tính trực tiếp từ mã nguồn · cập nhật khi bạn sửa</p>
+          <p className="text-xs text-stone-600">Tính trực tiếp từ mã nguồn · cập nhật khi bạn sửa</p>
         </div>
 
-        <div className="mt-4 gap-4 md:columns-2 xl:columns-3">
-          {METRIC_GROUPS.map((group) => (
-            <section
-              key={group.id}
-              className="mb-4 break-inside-avoid border border-stone-200 bg-white p-4"
-              style={{ borderRadius: 10 }}
-            >
-              <div className="flex items-baseline justify-between gap-2 border-b border-stone-100 pb-2.5">
-                <h3 className="text-[13px] font-semibold text-stone-900">{group.title}</h3>
-                <span className="text-[10.5px] uppercase tracking-wide text-stone-400">
-                  {group.items.length} chỉ số
-                </span>
-              </div>
-              <dl className="mt-1 divide-y divide-stone-100">
-                {group.items.map((item) => (
-                  <div key={item.key} className="flex items-start justify-between gap-3 py-2">
-                    <dt className="min-w-0">
-                      <span className="block text-[12px] font-medium leading-snug text-stone-800">
-                        {item.label}
-                      </span>
-                      <span
-                        className="mt-0.5 line-clamp-2 block text-[10.5px] leading-relaxed text-stone-400"
-                        title={item.desc}
-                      >
-                        {item.desc}
-                      </span>
-                    </dt>
-                    <dd className="shrink-0 pt-0.5 font-mono text-[13px] font-semibold text-stone-900">
-                      {formatMetric(analysis.metrics[item.key] ?? 0, item.format)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-          ))}
+        <div className="mt-4 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {METRIC_GROUPS.map((group) => {
+            const open = openGroups.has(group.id);
+            return (
+              <section
+                key={group.id}
+                className="border border-stone-200 bg-white p-4"
+                style={{ borderRadius: 10 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.id)}
+                  aria-expanded={open}
+                  data-guide="detect-metrics"
+                  className="flex w-full items-center justify-between gap-2 border-b border-stone-100 pb-2.5 text-left"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-semibold text-stone-900">{group.title}</span>
+                    <span className="mt-0.5 block text-xs text-stone-600">{group.subtitle}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 text-xs uppercase tracking-wide text-stone-600">
+                    {group.items.length} chỉ số
+                    <FaChevronDown
+                      size={10}
+                      className={`transition-transform ${open ? "rotate-180" : ""}`}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </button>
+                {open && (
+                  <dl className="mt-1 divide-y divide-stone-100">
+                    {group.items.map((item) => (
+                      <div key={item.key} className="flex items-start justify-between gap-3 py-2">
+                        <dt className="min-w-0">
+                          <span className="flex items-center gap-1.5 text-[12px] font-medium leading-snug text-stone-800">
+                            {item.label}
+                            <InfoTip label={`Giải thích ${item.label}`}>{item.desc}</InfoTip>
+                          </span>
+                        </dt>
+                        <dd className="shrink-0 pt-0.5 font-mono text-[13px] font-semibold text-stone-900">
+                          {formatMetric(analysis.metrics[item.key] ?? 0, item.format)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </section>
+            );
+          })}
         </div>
       </section>
 
@@ -750,14 +839,14 @@ export default function DetectPage() {
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
             <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-stone-900">
-              <FaSliders className="text-stone-400" /> Cách hệ thống chấm điểm
+              <FaSliders className="text-stone-500" /> Cách hệ thống chấm điểm
             </h2>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-600">
               Mỗi chỉ số được quy thành một tín hiệu có trọng số. Điểm dương nghiêng về AI, điểm âm
               nghiêng về người viết; tổng điểm đi qua hàm logistic để ra xác suất.
             </p>
           </div>
-          <div className="flex items-center gap-4 text-[11px] font-semibold">
+          <div className="flex items-center gap-4 text-xs font-semibold">
             <span className="flex items-center gap-1.5 text-emerald-700">
               <span className="h-2 w-2 rounded-full bg-emerald-600" /> Người viết
             </span>
@@ -775,7 +864,7 @@ export default function DetectPage() {
                   <p className="text-[12px] font-medium leading-snug text-stone-800">
                     {signal.label}
                   </p>
-                  <p className="mt-0.5 text-[11px] leading-snug text-stone-500">{signal.detail}</p>
+                  <p className="mt-0.5 text-xs leading-snug text-stone-600">{signal.detail}</p>
                 </div>
                 <div className="relative hidden h-2 w-28 shrink-0 bg-stone-100 sm:block">
                   <span className="absolute left-1/2 top-0 h-full w-px bg-stone-300" />
@@ -787,7 +876,7 @@ export default function DetectPage() {
                   />
                 </div>
                 <span
-                  className={`w-11 shrink-0 text-right font-mono text-[11px] font-semibold ${
+                  className={`w-11 shrink-0 text-right font-mono text-xs font-semibold ${
                     signal.weight > 0 ? "text-amber-700" : "text-emerald-700"
                   }`}
                 >
@@ -798,10 +887,10 @@ export default function DetectPage() {
             ))}
           </div>
         ) : (
-          <p className="mt-4 text-sm text-stone-500">Chưa có tín hiệu để hiển thị.</p>
+          <p className="mt-4 text-sm text-stone-600">Chưa có tín hiệu để hiển thị.</p>
         )}
 
-        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-stone-100 pt-4 text-[11px] text-stone-500">
+        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-stone-100 pt-4 text-xs text-stone-600">
           <span>
             <span className="font-semibold text-stone-700">AI ≥ 65%</span>
           </span>
@@ -816,7 +905,7 @@ export default function DetectPage() {
         </div>
       </section>
 
-      <p className="text-[11px] leading-relaxed text-stone-400">
+      <p className="text-xs leading-relaxed text-stone-500">
         Mức phân loại của từng dòng dựa trên tín hiệu cục bộ của chính dòng đó (chú thích, khai báo
         kiểu, độ dài định danh, định dạng), không phải kết luận chắc chắn. Dấu chấm vàng ở lề là
         tín hiệu AI, dấu chấm xanh là tín hiệu người viết, chấm xám là trung tính.

@@ -4,6 +4,8 @@ export interface ExtractedEntry {
   name: string;
   path: string;
   size: string;
+  /** Nội dung văn bản (nếu file là mã nguồn và đọc được). */
+  text?: string;
 }
 
 const CODE_EXTS = [".c", ".cc", ".cpp", ".h", ".hpp", ".py", ".java", ".js", ".jsx", ".ts", ".tsx", ".go", ".rs", ".rb", ".php", ".swift", ".kt", ".cs"];
@@ -29,13 +31,28 @@ export async function listZipFiles(file: File): Promise<ExtractedEntry[]> {
   return entries;
 }
 
+const MAX_PREVIEW_BYTES = 512 * 1024;
+
 export async function listZipFilesWithSize(file: File): Promise<ExtractedEntry[]> {
   const zip = await JSZip.loadAsync(file);
   const entries: ExtractedEntry[] = [];
   const files = Object.values(zip.files).filter((f) => !f.dir && isCodeFile(f.name));
   for (const f of files) {
     const data = await f.async("uint8array");
-    entries.push({ name: f.name.split("/").pop() ?? f.name, path: f.name, size: formatSize(data.length) });
+    let text: string | undefined;
+    if (data.length <= MAX_PREVIEW_BYTES) {
+      try {
+        text = new TextDecoder("utf-8", { fatal: false }).decode(data);
+      } catch {
+        text = undefined;
+      }
+    }
+    entries.push({
+      name: f.name.split("/").pop() ?? f.name,
+      path: f.name,
+      size: formatSize(data.length),
+      text,
+    });
   }
   return entries;
 }

@@ -1,7 +1,11 @@
-import { useMemo, useState } from "react";
-import { FaArrowLeft, FaArrowsLeftRight, FaCheck, FaCodeCompare, FaCopy, FaLink } from "react-icons/fa6";
-import { sampleCodeA, sampleCodeB, mockSubmissions, type Submission } from "../data/mock";
-import { pairRelations } from "../data/pairRelations";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { FaArrowLeft, FaArrowsLeftRight, FaCheck, FaCodeCompare, FaCopy, FaLink, FaPrint } from "react-icons/fa6";
+import type { Submission } from "../data/types";
+import RouteSkeleton from "../modules/lib/Components/UI/feedback/RouteSkeleton";
+import { useBackendData } from "../modules/lib/hook/backend-data-context";
+import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
+import { usePrefs } from "../modules/lib/hook/prefs-context";
 
 // ---------------------------------------------------------------------------
 // Đối chiếu ở mức dòng:
@@ -153,8 +157,8 @@ const matchedCount = (lines: ScoredLine[]) =>
 
 function shadeSide(score: number, side: "A" | "B", blank: boolean) {
   if (blank || score < SIM_THRESHOLD) return "transparent";
-  if (side === "A") return score >= STRONG_MATCH ? "#86efac" : "#bbf7d0";
-  return score >= STRONG_MATCH ? "#fca5a5" : "#fecaca";
+  if (side === "A") return score >= STRONG_MATCH ? "var(--cmp-a-strong)" : "var(--cmp-a-weak)";
+  return score >= STRONG_MATCH ? "var(--cmp-b-strong)" : "var(--cmp-b-weak)";
 }
 
 const LINE_H = 20; // khớp leading-5
@@ -166,11 +170,13 @@ function CodeEditor({
   onChange,
   scoredLines,
   side,
+  colorBlind,
 }: {
   code: string;
   onChange: (v: string) => void;
   scoredLines: ScoredLine[];
   side: "A" | "B";
+  colorBlind: boolean;
 }) {
   const contentH = scoredLines.length * LINE_H + PAD_Y * 2;
   const longest = scoredLines.reduce((m, l) => Math.max(m, l.text.length), 0);
@@ -180,15 +186,15 @@ function CodeEditor({
   return (
     <div className="overflow-hidden border border-stone-200 bg-white" style={{ borderRadius: 10 }}>
       <div className="flex items-center justify-between gap-3 border-b border-stone-100 bg-stone-50 px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">
           {side} · {scoredLines.length} dòng
         </span>
-        <span className="flex items-center gap-2 text-[11px] text-stone-400">
+        <span className="flex items-center gap-2 text-xs text-stone-500">
           <span
             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold"
             style={{
-              background: side === "A" ? "#dcfce7" : "#fee2e2",
-              color: side === "A" ? "#166534" : "#991b1b",
+              background: side === "A" ? "var(--cmp-a-badge)" : "var(--cmp-b-badge)",
+              color: side === "A" ? "var(--cmp-a-text)" : "var(--cmp-b-text)",
             }}
           >
             {sameCount} dòng giống
@@ -228,12 +234,20 @@ function CodeEditor({
               <div style={{ paddingTop: PAD_Y, paddingBottom: PAD_Y }}>
                 {scoredLines.map((l, i) => {
                   const bg = shadeSide(l.score, side, l.blank);
+                  const matched = !l.blank && l.score >= SIM_THRESHOLD;
+                  const strong = l.score >= STRONG_MATCH;
                   return (
                     <div
                       key={i}
+                      className={matched && colorBlind ? "cmp-match-line" : undefined}
                       style={{
                         height: LINE_H,
                         background: bg,
+                        // Chế độ mù màu: không phụ thuộc màu → thêm viền trái + nét đứt/nét liền.
+                        borderLeft: matched && colorBlind ? `4px solid ${side === "A" ? "var(--cmp-a-text)" : "var(--cmp-b-text)"}` : "4px solid transparent",
+                        borderBottom: matched && colorBlind ? (strong ? "2px solid currentColor" : "2px dotted currentColor") : "2px solid transparent",
+                        color: side === "A" ? "var(--cmp-a-text)" : "var(--cmp-b-text)",
+                        boxSizing: "border-box",
                       }}
                     />
                   );
@@ -262,14 +276,63 @@ function CodeEditor({
   );
 }
 
-const list = [...mockSubmissions].sort((x, y) => y.similarity - x.similarity);
+/** Bài nộp trống — chỉ dùng làm placeholder khi chưa có dữ liệu thật nào ở UI chọn bài. */
+const emptySubmission: Submission = {
+  id: "",
+  fileName: "—",
+  studentCode: "",
+  studentName: "",
+  className: "",
+  language: "",
+  label: "innocent",
+  similarity: 0,
+  size: "",
+  uploadedAt: "",
+  status: "done",
+};
 
 export default function ComparePage() {
-  const [view, setView] = useState<"picker" | "compare">("picker");
-  const [a, setA] = useState<Submission>(list[0]);
-  const [b, setB] = useState<Submission>(list[1]);
-  const [codeA, setCodeA] = useState(sampleCodeA);
-  const [codeB, setCodeB] = useState(sampleCodeB);
+  const [searchParams] = useSearchParams();
+  const toast = useToast();
+  // Nguồn dữ liệu THẬT từ backend (UI giữ nguyên 100%).
+  const { submissions: mockSubmissions, pairs: pairRelations, getSnippetCode } = useBackendData();
+  const { colorBlind, setColorBlind } = usePrefs();
+  const [mobileTab, setMobileTab] = useState<"A" | "B" | "both">("both");
+  const list = useMemo(
+    () => [...mockSubmissions].sort((x, y) => y.similarity - x.similarity),
+    [mockSubmissions],
+  );
+  const initial = useMemo(() => {
+    const find = (value: string | null) => {
+      if (!value) return undefined;
+      const normalized = value.toLowerCase();
+      return list.find(
+        (item) => item.id === value || item.fileName.toLowerCase() === normalized,
+      );
+    };
+    const aParam = find(searchParams.get("a")) ?? find(searchParams.get("file"));
+    const bParam = find(searchParams.get("b"));
+    const a0 = aParam ?? list.at(0);
+    let b0 = bParam;
+    if (!b0) {
+      const partner = pairRelations.find((pair) => pair.aId === a0?.id || pair.bId === a0?.id);
+      const partnerId = partner ? (partner.aId === a0?.id ? partner.bId : partner.aId) : null;
+      b0 = partnerId ? list.find((item) => item.id === partnerId) : undefined;
+    }
+    if (!b0 || b0.id === a0?.id) b0 = list.find((item) => item.id !== a0?.id) ?? list.at(1);
+    const fromUrl = Boolean(aParam && (bParam || searchParams.get("file")));
+    return {
+      a: a0 ?? null,
+      b: b0 ?? null,
+      view: fromUrl ? ("compare" as const) : ("picker" as const),
+    };
+  }, [searchParams, list, pairRelations]);
+
+  const [view, setView] = useState<"picker" | "compare">(initial.view);
+  const [a, setA] = useState<Submission | null>(initial.a);
+  const [b, setB] = useState<Submission | null>(initial.b);
+  const [codeA, setCodeA] = useState("");
+  const [codeB, setCodeB] = useState("");
   const [copied, setCopied] = useState<"A" | "B" | null>(null);
 
   // Cách chọn bài: chọn 1 trong 2 option
@@ -281,17 +344,46 @@ export default function ComparePage() {
   const pctB = similarity(scored.b);
   const currentPct = Math.round((pctA + pctB) / 2);
 
-  const open = (x: Submission, y: Submission) => {
+  const open = async (x: Submission, y: Submission) => {
     setA(x);
     setB(y);
-    // Chọn cặp code theo bài A; hai khung luôn là hai đoạn khác nhau.
-    const flip = list.indexOf(x) % 2 === 1;
-    setCodeA(flip ? sampleCodeB : sampleCodeA);
-    setCodeB(flip ? sampleCodeA : sampleCodeB);
     setView("compare");
+    // Lấy code THẬT của hai bài từ backend (highlight endpoint tái tạo từng dòng).
+    setCodeA("");
+    setCodeB("");
+    try {
+      const [textX, textY] = await Promise.all([getSnippetCode(x.id), getSnippetCode(y.id)]);
+      if (textX == null && textY == null) {
+        toast.error(
+          "Không tải được nội dung code",
+          "Backend không trả về nội dung của cả hai bài — hãy kiểm tra dữ liệu đã được quét.",
+        );
+        return;
+      }
+      if (textX == null) {
+        toast.error("Không tải được bài A", `Không tìm thấy nội dung của ${x.fileName} trên backend.`);
+      }
+      if (textY == null) {
+        toast.error("Không tải được bài B", `Không tìm thấy nội dung của ${y.fileName} trên backend.`);
+      }
+      if (textX != null) setCodeA(textX);
+      if (textY != null) setCodeB(textY);
+    } catch {
+      toast.error("Lỗi khi tải code", "Không nhận được nội dung code từ backend.");
+    }
   };
 
+  // Vào thẳng màn so sánh khi URL có ?a=&b= (hoặc ?file=) — ban đầu chưa có code, tải thật.
+  useEffect(() => {
+    if (initial.view === "compare" && initial.a && initial.b) {
+      void open(initial.a, initial.b);
+    }
+    // chỉ chạy lúc mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const swap = () => {
+    if (!a || !b) return;
     const t = a;
     setA(b);
     setB(t);
@@ -302,14 +394,22 @@ export default function ComparePage() {
   const copy = async (side: "A" | "B") => {
     await navigator.clipboard.writeText(side === "A" ? codeA : codeB).catch(() => {});
     setCopied(side);
+    toast.success(`Đã sao chép code bài ${side}`);
     window.setTimeout(() => setCopied(null), 1500);
   };
 
   const labelText = (label: Submission["label"]) =>
     label === "plagiarism" ? "Cần xem lại" : label === "suspicious" ? "Nghi ngờ" : "Không có dấu hiệu";
 
+  // Chưa chọn đủ hai bài (hoặc chưa có dữ liệu thật) → không render màn so sánh.
+  if (view === "compare" && (!a || !b)) {
+    return <RouteSkeleton />;
+  }
+
   if (view === "picker") {
     const byId = new Map(mockSubmissions.map((s) => [s.id, s]));
+    const aSel = a ?? list.at(0) ?? emptySubmission;
+    const bSel = b ?? list.find((item) => item.id !== aSel.id) ?? list.at(1) ?? emptySubmission;
     const pairOptions = pairRelations
       .slice(0, 8)
       .map((p) => ({ p, left: byId.get(p.aId), right: byId.get(p.bId) }))
@@ -338,11 +438,11 @@ export default function ComparePage() {
     return (
       <div className="space-y-5">
         <div className="border-b border-stone-200 pb-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">CODEX / So sánh</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / So sánh</p>
           <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
-            <FaCodeCompare className="text-stone-500" /> Chọn hai bài để đối chiếu
+            <FaCodeCompare className="text-stone-600" /> Chọn hai bài để đối chiếu
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
             Chọn một trong hai cách bên dưới, rồi mở trang so sánh song song.
           </p>
         </div>
@@ -351,19 +451,19 @@ export default function ComparePage() {
         <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Cách chọn hai bài">
           <button {...modeCard("pair")}>
             <span className="flex items-center gap-2 text-sm font-semibold">
-              <FaLink className={pickMode === "pair" ? "text-stone-300" : "text-stone-400"} />
+              <FaLink className={pickMode === "pair" ? "text-stone-300" : "text-stone-500"} />
               Cặp có điểm tương đồng cao
             </span>
-            <span className={`mt-1 block text-xs ${pickMode === "pair" ? "text-stone-300" : "text-stone-500"}`}>
+            <span className={`mt-1 block text-xs ${pickMode === "pair" ? "text-stone-300" : "text-stone-600"}`}>
               Chọn từ danh sách cặp hệ thống đã phát hiện.
             </span>
           </button>
           <button {...modeCard("manual")}>
             <span className="flex items-center gap-2 text-sm font-semibold">
-              <FaArrowsLeftRight className={pickMode === "manual" ? "text-stone-300" : "text-stone-400"} />
+              <FaArrowsLeftRight className={pickMode === "manual" ? "text-stone-300" : "text-stone-500"} />
               Tự chọn hai bài
             </span>
-            <span className={`mt-1 block text-xs ${pickMode === "manual" ? "text-stone-300" : "text-stone-500"}`}>
+            <span className={`mt-1 block text-xs ${pickMode === "manual" ? "text-stone-300" : "text-stone-600"}`}>
               Bấm chọn ô bài A và bài B trong danh sách.
             </span>
           </button>
@@ -390,13 +490,13 @@ export default function ComparePage() {
               <button
                 type="button"
                 disabled={!selectedPair}
-                onClick={() => selectedPair && open(selectedPair.left, selectedPair.right)}
+                onClick={() => selectedPair && void open(selectedPair.left, selectedPair.right)}
                 className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-40"
               >
                 <FaCodeCompare /> Xem hai bài này
               </button>
             </div>
-            <p className="mt-2 text-xs text-stone-500">
+            <p className="mt-2 text-xs text-stone-600">
               {selectedPair
                 ? `${selectedPair.p.similarity}% tương đồng · ${labelText(selectedPair.left.label)}`
                 : "Chưa có cặp nào được phát hiện."}
@@ -406,13 +506,13 @@ export default function ComparePage() {
           <section className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
             <div className="grid gap-4 sm:grid-cols-2">
               {([
-                ["A", a, setA, b] as const,
-                ["B", b, setB, a] as const,
+                ["A", aSel, setA, bSel] as const,
+                ["B", bSel, setB, aSel] as const,
               ]).map(([side, selected, setter, other]) => (
                 <div key={side} className="min-w-0">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <h2 className="text-sm font-semibold text-stone-900">Bài {side}</h2>
-                    <span className="truncate text-[11px] text-stone-500">
+                    <span className="truncate text-xs text-stone-600">
                       {selected.fileName} · {selected.similarity}%
                     </span>
                   </div>
@@ -447,7 +547,7 @@ export default function ComparePage() {
                             </span>
                             <span
                               className={`mt-0.5 block truncate text-xs ${
-                                active ? "text-stone-300" : "text-stone-500"
+                                active ? "text-stone-300" : "text-stone-600"
                               }`}
                             >
                               {s.studentCode} · Lớp {s.className} · {labelText(s.label)}
@@ -455,7 +555,7 @@ export default function ComparePage() {
                           </span>
                           <span
                             className={`shrink-0 text-sm font-semibold ${
-                              active ? "text-white" : s.similarity >= 80 ? "text-red-700" : "text-stone-500"
+                              active ? "text-white" : s.similarity >= 80 ? "text-red-700" : "text-stone-600"
                             }`}
                           >
                             {s.similarity}%
@@ -469,14 +569,14 @@ export default function ComparePage() {
             </div>
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-4">
-              <p className="text-xs text-stone-500">
-                <span className="font-medium text-stone-900">{a.fileName}</span>
-                <span className="mx-1 text-stone-400">↔</span>
-                <span className="font-medium text-stone-900">{b.fileName}</span>
+              <p className="text-xs text-stone-600">
+                <span className="font-medium text-stone-900">{aSel.fileName}</span>
+                <span className="mx-1 text-stone-500">↔</span>
+                <span className="font-medium text-stone-900">{bSel.fileName}</span>
               </p>
               <button
                 type="button"
-                onClick={() => open(a, b)}
+                onClick={() => void open(aSel, bSel)}
                 className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800"
               >
                 <FaCodeCompare /> Xem hai bài này
@@ -488,18 +588,23 @@ export default function ComparePage() {
     );
   }
 
+  // Màn so sánh luôn cần đủ hai bài.
+  if (!a || !b) {
+    return <RouteSkeleton />;
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">CODEX / So sánh</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / So sánh</p>
           <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
-            <FaCodeCompare className="text-stone-500" /> So sánh hai đoạn code
+            <FaCodeCompare className="text-stone-600" /> So sánh hai đoạn code
           </h1>
         </div>
         <div className="flex items-center gap-4 border border-stone-200 bg-white px-5 py-3" style={{ borderRadius: 10 }}>
           <div className="text-right">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">Tương đồng</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Tương đồng</p>
             <p className="font-serif text-3xl font-semibold text-red-700">{currentPct}%</p>
           </div>
           <div className="h-10 w-px bg-stone-200" />
@@ -508,7 +613,7 @@ export default function ComparePage() {
               <span className="font-semibold text-stone-900">A {pctA}%</span> ·{" "}
               <span className="font-semibold text-stone-900">B {pctB}%</span>
             </p>
-            <p className="text-xs text-stone-400">Càng xanh đậm càng giống</p>
+            <p className="text-xs text-stone-500">Càng xanh đậm càng giống</p>
           </div>
           <button
             onClick={swap}
@@ -518,55 +623,125 @@ export default function ComparePage() {
           </button>
           <button
             onClick={() => setView("picker")}
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold text-stone-500 hover:bg-stone-50 hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-900"
           >
             <FaArrowLeft /> Đổi bài
           </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+            title="In trang so sánh này"
+          >
+            <FaPrint /> In
+          </button>
+          <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-stone-700">
+            <input
+              type="checkbox"
+              checked={colorBlind}
+              onChange={(e) => setColorBlind(e.target.checked)}
+              className="h-4 w-4 accent-stone-900"
+            />
+            Mù màu
+          </label>
         </div>
       </div>
 
+      {/* Tabs cho mobile: tránh 2 cột bị ép */}
+      <div className="flex gap-1 rounded-lg border border-stone-200 bg-white p-1 lg:hidden" role="tablist" aria-label="Chọn khung code hiển thị">
+        {(["A", "B", "both"] as const).map((tab) => (
+          <button
+            key={tab}
+            role="tab"
+            aria-selected={mobileTab === tab}
+            onClick={() => setMobileTab(tab)}
+            className={`flex-1 rounded-md px-3 py-2 text-xs font-semibold ${
+              mobileTab === tab ? "bg-stone-900 text-white" : "text-stone-700 hover:bg-stone-100"
+            }`}
+          >
+            {tab === "both" ? "Cả hai" : `Bài ${tab}`}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-5 lg:grid-cols-2">
-        <section className="min-w-0 space-y-3">
+        <section className={`min-w-0 space-y-3 ${mobileTab === "B" ? "hidden lg:block" : ""}`}>
           <div className="flex items-center justify-between">
-            <h2 className="truncate text-sm font-semibold text-stone-900">A · {a.fileName} — {a.studentName}</h2>
-            <button onClick={() => copy("A")} className="inline-flex items-center gap-1 text-xs font-medium text-stone-500 hover:text-stone-900">
-              {copied === "A" ? <FaCheck className="text-emerald-600" /> : <FaCopy />} {copied === "A" ? "Đã copy" : "Copy"}
+            <h2 className="truncate text-sm font-semibold text-stone-900">A · {a.fileName} — {a.studentName} · {pctA}%</h2>
+            <button onClick={() => copy("A")} className="inline-flex items-center gap-1 text-xs font-medium text-stone-600 hover:text-stone-900">
+              {copied === "A" ? <FaCheck className="text-emerald-600" /> : <FaCopy />} {copied === "A" ? "Đã sao chép" : "Sao chép"}
             </button>
           </div>
-          <CodeEditor code={codeA} onChange={setCodeA} scoredLines={scored.a} side="A" />
+          <CodeEditor code={codeA} onChange={setCodeA} scoredLines={scored.a} side="A" colorBlind={colorBlind} />
         </section>
 
-        <section className="min-w-0 space-y-3">
+        <section className={`min-w-0 space-y-3 ${mobileTab === "A" ? "hidden lg:block" : ""}`}>
           <div className="flex items-center justify-between">
-            <h2 className="truncate text-sm font-semibold text-stone-900">B · {b.fileName} — {b.studentName}</h2>
-            <button onClick={() => copy("B")} className="inline-flex items-center gap-1 text-xs font-medium text-stone-500 hover:text-stone-900">
-              {copied === "B" ? <FaCheck className="text-emerald-600" /> : <FaCopy />} {copied === "B" ? "Đã copy" : "Copy"}
+            <h2 className="truncate text-sm font-semibold text-stone-900">B · {b.fileName} — {b.studentName} · {pctB}%</h2>
+            <button onClick={() => copy("B")} className="inline-flex items-center gap-1 text-xs font-medium text-stone-600 hover:text-stone-900">
+              {copied === "B" ? <FaCheck className="text-emerald-600" /> : <FaCopy />} {copied === "B" ? "Đã sao chép" : "Sao chép"}
             </button>
           </div>
-          <CodeEditor code={codeB} onChange={setCodeB} scoredLines={scored.b} side="B" />
+          <CodeEditor code={codeB} onChange={setCodeB} scoredLines={scored.b} side="B" colorBlind={colorBlind} />
         </section>
       </div>
 
       <div className="flex flex-wrap items-center gap-4 border border-stone-200 bg-white p-4 text-xs text-stone-600" style={{ borderRadius: 10 }}>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-5" style={{ background: "#86efac", borderRadius: 3 }} /> A · giống ≥90%
+          <span className="h-3 w-5" style={{ background: "var(--cmp-a-strong)", borderRadius: 3 }} /> A · giống ≥90%
+          {colorBlind && <span className="font-semibold">▬ nét liền</span>}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-5" style={{ background: "#bbf7d0", borderRadius: 3 }} /> A · giống ≥75%
+          <span className="h-3 w-5" style={{ background: "var(--cmp-a-weak)", borderRadius: 3 }} /> A · giống ≥75%
+          {colorBlind && <span className="font-semibold">┈ nét đứt</span>}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-5" style={{ background: "#fca5a5", borderRadius: 3 }} /> B · giống ≥90%
+          <span className="h-3 w-5" style={{ background: "var(--cmp-b-strong)", borderRadius: 3 }} /> B · giống ≥90%
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-5" style={{ background: "#fecaca", borderRadius: 3 }} /> B · giống ≥75%
+          <span className="h-3 w-5" style={{ background: "var(--cmp-b-weak)", borderRadius: 3 }} /> B · giống ≥75%
         </span>
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-5 border border-stone-200 bg-white" style={{ borderRadius: 3 }} /> Khác nhau — không tô
         </span>
-        <span className="ml-auto text-stone-400">
-          Chỉ dòng trùng từ 75% token trở lên; dòng trống không tính và không tô.
+        <span className="ml-auto text-stone-500">
+          {colorBlind
+            ? "Bật mù màu: phân đoạn bằng viền trái + nét liền/đứt, không chỉ phụ thuộc màu."
+            : "Chỉ dòng trùng từ 75% token trở lên; dòng trống không tính và không tô."}
         </span>
       </div>
+
+      {/* Bảng diff dạng chữ cho screen reader / người dùng không thấy màu */}
+      <details className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
+        <summary className="cursor-pointer text-sm font-semibold text-stone-900">Xem dạng bảng (cho trình đọc màn hình)</summary>
+        <table className="mt-3 w-full border-collapse text-xs">
+          <caption className="pb-2 text-left text-stone-600">Các đoạn giống nhau theo dòng (chỉ tính dòng ≥75%).</caption>
+          <thead>
+            <tr className="text-left text-stone-500">
+              <th className="border border-stone-200 px-2 py-1">Bên A</th>
+              <th className="border border-stone-200 px-2 py-1">Điểm</th>
+              <th className="border border-stone-200 px-2 py-1">Bên B</th>
+              <th className="border border-stone-200 px-2 py-1">Điểm</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scored.a.map((l, i) => {
+              const r = scored.b[Math.min(i, scored.b.length - 1)];
+              if (!r) return null;
+              const mA = !l.blank && l.score >= SIM_THRESHOLD;
+              const mB = !r.blank && r.score >= SIM_THRESHOLD;
+              if (!mA && !mB) return null;
+              return (
+                <tr key={i} className="align-top">
+                  <td className="border border-stone-200 px-2 py-1 font-mono">{l.text.slice(0, 60) || "—"}</td>
+                  <td className="border border-stone-200 px-2 py-1">{mA ? `${Math.round(l.score * 100)}%` : "—"}</td>
+                  <td className="border border-stone-200 px-2 py-1 font-mono">{r.text.slice(0, 60) || "—"}</td>
+                  <td className="border border-stone-200 px-2 py-1">{mB ? `${Math.round(r.score * 100)}%` : "—"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </details>
     </div>
   );
 }

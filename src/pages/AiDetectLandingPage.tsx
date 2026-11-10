@@ -9,7 +9,23 @@ import {
 } from "react-icons/fa6";
 import { samples, sampleInfo, type SampleKind } from "../data/aiSamples";
 import { sampleLibrary, samplesOfKind } from "../data/aiSampleLibrary";
-import { analyzeCode } from "../modules/plagiarism/utils/aiClassify";
+import { useBackendData } from "../modules/lib/hook/backend-data-context";
+import { analyzeCode, type AnalysisResult } from "../modules/plagiarism/utils/aiClassify";
+
+interface LandingCardData {
+  id: string;
+  info: {
+    fileName: string;
+    title: string;
+    description: string;
+    accent: "amber" | "emerald" | "stone";
+  };
+  entries: number;
+  averageAi: number;
+  analysis: AnalysisResult;
+  preview: string[];
+  fileName: string;
+}
 
 const accents = {
   amber: {
@@ -65,39 +81,81 @@ const isPreviewComment = (line: string) => {
 };
 
 export default function AiDetectLandingPage() {
-  const cards = useMemo(
-    () =>
-      samples.map((sample) => {
+  const { aiResults } = useBackendData();
+
+  const cards = useMemo<LandingCardData[]>(() => {
+    if (aiResults.length === 0) {
+      return samples.map((sample) => {
         const entries = samplesOfKind(sample.id);
         const analyses = entries.map((entry) => analyzeCode(entry.code));
-        const averageAi =
-          analyses.reduce((sum, item) => sum + item.aiProbability, 0) / analyses.length;
+        const averageAi = analyses.reduce((sum, item) => sum + item.aiProbability, 0) / analyses.length;
 
         return {
-          ...sample,
+          id: sample.id,
           info: sampleInfo[sample.id],
           entries: entries.length,
           averageAi,
           analysis: analyses[0],
-          preview: snippetLines(entries[0].code),
-          fileName: entries[0].fileName,
+          preview: snippetLines(entries[0]?.code ?? ""),
+          fileName: entries[0]?.fileName ?? sampleInfo[sample.id].fileName,
         };
-      }),
-    [],
-  );
+      });
+    }
+
+    const infoByKind: Record<SampleKind, { fileName: string; title: string; description: string; accent: "amber" | "emerald" | "stone" }> = {
+      ai: {
+        fileName: "student_record.py",
+        title: "Code do AI sinh",
+        description: "Docstring đầy đủ, type hints, tên biến dài và thụt lề đều. Mẫu lấy từ kho mã nguồn của hệ thống.",
+        accent: "amber",
+      },
+      human: {
+        fileName: "sap_xep.c",
+        title: "Code người viết",
+        description: "Hàm ngắn, biến i/n/a, ít chú thích và viết liền. Mẫu lấy từ kho mã nguồn của hệ thống.",
+        accent: "emerald",
+      },
+      mixed: {
+        fileName: "hinh_hoc.py",
+        title: "Mã hỗn hợp",
+        description: "Nửa đầu có cấu trúc, nửa sau viết tay nhanh. Mẫu lấy từ kho mã nguồn của hệ thống.",
+        accent: "stone",
+      },
+    };
+    const built: LandingCardData[] = (["ai", "human", "mixed"] as SampleKind[]).map((kind) => {
+      const items = aiResults.filter((r) => r.prediction === kind);
+      const averageAi = items.length > 0 ? items.reduce((sum, r) => sum + (r.confidence ?? 0), 0) / items.length : 0;
+      const first = items[0];
+      const info = infoByKind[kind];
+      return {
+        id: kind,
+        info: {
+          ...info,
+          fileName: first?.fileName ?? info.fileName,
+          title: first?.fileName ?? info.title,
+        },
+        entries: items.length,
+        averageAi,
+        analysis: analyzeCode(""),
+        preview: snippetLines(""),
+        fileName: first?.fileName ?? info.fileName,
+      };
+    });
+    return built;
+  }, [aiResults, samples, samplesOfKind, analyzeCode]);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
             CODEX / Phân loại
           </p>
           <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
             Chọn mã nguồn để phân tích
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
             Ba nhóm mẫu được lấy từ kho mã nguồn của hệ thống. Chọn một nhóm để xem danh sách
             tệp, rồi mở trang phân tích để xem 34 chỉ số và nhấn vào từng dòng để đọc giải thích.
           </p>
@@ -105,17 +163,17 @@ export default function AiDetectLandingPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             to="/ai-detect/kho-mau"
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
           >
             Kho mẫu hệ thống · {sampleLibrary.length} tệp
-            <FaArrowRight className="text-[9px]" />
+            <FaArrowRight className="text-xs" />
           </Link>
           <Link
             to="/ai-detect/cum"
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
           >
             Mô hình cụm
-            <FaArrowRight className="text-[9px]" />
+            <FaArrowRight className="text-xs" />
           </Link>
         </div>
       </div>
@@ -142,16 +200,16 @@ export default function AiDetectLandingPage() {
                       <Icon size={16} />
                     </span>
                     <div>
-                      <p className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
                         {accent.label}
                       </p>
-                      <p className="font-mono text-[11px] text-stone-500">
+                      <p className="font-mono text-xs text-stone-600">
                         {card.entries} tệp · {card.fileName}
                       </p>
                     </div>
                   </div>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${accent.chip}`}
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${accent.chip}`}
                   >
                     {verdictLabel(card.averageAi)}
                   </span>
@@ -160,7 +218,7 @@ export default function AiDetectLandingPage() {
                 <h2 className="mt-4 font-serif text-xl font-semibold tracking-tight text-stone-900">
                   {card.info.title}
                 </h2>
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-stone-500">
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-stone-600">
                   {card.info.description}
                 </p>
 
@@ -169,17 +227,17 @@ export default function AiDetectLandingPage() {
                     <span className="h-1.5 w-1.5 rounded-full bg-stone-300" />
                     <span className="h-1.5 w-1.5 rounded-full bg-stone-300" />
                     <span className="h-1.5 w-1.5 rounded-full bg-stone-300" />
-                    <span className="ml-1.5 truncate font-mono text-[9.5px] text-stone-400">
+                    <span className="ml-1.5 truncate font-mono text-xs text-stone-500">
                       {card.fileName}
                     </span>
                   </div>
-                  <pre className="h-[144px] overflow-hidden px-3 py-2 font-mono text-[10px] leading-[1.7]">
+                  <pre className="h-[144px] overflow-hidden px-3 py-2 font-mono text-xs leading-[1.7]">
                     {card.preview.map((line, index) => (
                       <div
                         key={index}
                         className={
                           isPreviewComment(line)
-                            ? "text-stone-400"
+                            ? "text-stone-500"
                             : line.trim() === ""
                               ? "text-transparent"
                               : "text-stone-700"
@@ -191,7 +249,7 @@ export default function AiDetectLandingPage() {
                   </pre>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-stone-100 pt-3 text-[11px] text-stone-500">
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-stone-100 pt-3 text-xs text-stone-600">
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span>
                       <span className="font-semibold text-stone-700">
@@ -214,7 +272,7 @@ export default function AiDetectLandingPage() {
                   </span>
                   <span className="inline-flex items-center gap-1.5 font-semibold text-stone-900">
                     Xem {card.entries} tệp
-                    <FaArrowRight className="text-[10px] transition-transform group-hover:translate-x-0.5" />
+                    <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </div>
               </div>
@@ -232,7 +290,7 @@ export default function AiDetectLandingPage() {
           <p className="font-serif text-lg font-semibold text-stone-900">
             Không có mẫu bạn cần?
           </p>
-          <p className="mt-1 text-sm leading-relaxed text-stone-500">
+          <p className="mt-1 text-sm leading-relaxed text-stone-600">
             Mở trang phân tích rồi nạp một tệp từ máy hoặc dán mã của bạn vào khung soạn thảo.
           </p>
         </div>
@@ -244,7 +302,7 @@ export default function AiDetectLandingPage() {
         </Link>
       </div>
 
-      <p className="text-[11px] leading-relaxed text-stone-400">
+      <p className="text-xs leading-relaxed text-stone-500">
         Mẹo: trong trang phân tích, nhấn vào một dòng mã để xem dòng đó nghiêng về AI hay
         người viết, kèm lý do cụ thể. Chấm vàng ở lề là tín hiệu AI, chấm xanh là tín hiệu
         người viết.

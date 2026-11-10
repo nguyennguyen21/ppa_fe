@@ -12,7 +12,7 @@ export default function ExportButtons({ onExcel, onPdf, disabled, showLabel = tr
   return (
     <div className="flex items-center gap-2">
       {showLabel && (
-        <span className="hidden text-[11px] font-semibold uppercase tracking-wide text-stone-400 sm:inline">
+        <span className="hidden text-xs font-semibold uppercase tracking-wide text-stone-500 sm:inline">
           Xuất
         </span>
       )}

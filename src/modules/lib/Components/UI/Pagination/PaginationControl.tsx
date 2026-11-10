@@ -46,18 +46,18 @@ const PaginationControl: React.FC<PaginationControlProps> = ({
   ofPagesLabel = "of {total} pages",
   size = "md",
   containerSpacing = "space-x-3",
-  selectBgColor = "bg-gray-50",
-  selectBorderColor = "border-gray-300",
-  selectFocusRing = "focus:ring-blue-500 focus:border-blue-500",
-  inputBgColor = "bg-gray-100",
-  inputBorderColor = "border-gray-300",
+  selectBgColor = "bg-white",
+  selectBorderColor = "border-stone-300",
+  selectFocusRing = "focus:border-stone-900",
+  inputBgColor = "bg-stone-50",
+  inputBorderColor = "border-stone-200",
   buttonBgColor = "bg-white",
-  buttonHoverBgColor = "hover:bg-gray-100",
-  buttonBorderColor = "border-gray-300",
-  buttonFocusRing = "focus:ring-blue-200",
-  iconColor = "text-gray-600",
-  iconHoverColor = "group-hover:text-gray-900",
-  textColor = "text-gray-700",
+  buttonHoverBgColor = "hover:bg-stone-50",
+  buttonBorderColor = "border-stone-300",
+  buttonFocusRing = "focus-visible:ring-stone-300",
+  iconColor = "text-stone-600",
+  iconHoverColor = "group-hover:text-stone-900",
+  textColor = "text-stone-700",
   maxSelectOptions = 100,
   className,
 }) => {
@@ -153,9 +153,9 @@ const PaginationControl: React.FC<PaginationControlProps> = ({
               <FaChevronLeft className={`${currentSize.icon} ${iconColor} ${iconHoverColor} transition-colors`} />
             </button>
             {/* Pure CSS Tooltip */}
-            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10 bg-gray-800 text-white rounded-md shadow-lg whitespace-nowrap ${currentSize.tooltip}`}>
+            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10 bg-stone-900 text-white rounded-md shadow-lg whitespace-nowrap ${currentSize.tooltip}`}>
               {prevLabel}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-900"></div>
             </div>
           </div>
 
@@ -171,9 +171,9 @@ const PaginationControl: React.FC<PaginationControlProps> = ({
               <FaChevronRight className={`${currentSize.icon} ${iconColor} ${iconHoverColor} transition-colors`} />
             </button>
             {/* Pure CSS Tooltip */}
-            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10 bg-gray-800 text-white rounded-md shadow-lg whitespace-nowrap ${currentSize.tooltip}`}>
+            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10 bg-stone-900 text-white rounded-md shadow-lg whitespace-nowrap ${currentSize.tooltip}`}>
               {nextLabel}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-900"></div>
             </div>
           </div>
 

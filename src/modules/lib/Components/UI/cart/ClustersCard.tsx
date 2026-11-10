@@ -39,22 +39,22 @@ interface ClustersCardProps {
 }
 
 const ClustersCard: React.FC<ClustersCardProps> = ({
-  title = "Clusters",
-  description = "Aggregates submissions in groups, useful for exercises.",
-  submissionsLabel = "Submissions",
-  viewAllText = "View all clusters",
+  title = "Cụm bài nộp",
+  description = "Gom các bài nộp có liên hệ thành từng nhóm để dễ rà soát.",
+  submissionsLabel = "Bài nộp",
+  viewAllText = "Xem tất cả cụm",
   clusters = [
     { id: "1", count: 0 },
     { id: "2", count: 0 },
   ],
   cardBgColor = "bg-white",
-  titleColor = "text-gray-900",
-  descriptionColor = "text-gray-500",
-  submissionsLabelColor = "text-gray-700",
-  clusterBgColor = "bg-orange-500",
+  titleColor = "text-stone-900",
+  descriptionColor = "text-stone-600",
+  submissionsLabelColor = "text-stone-700",
+  clusterBgColor = "bg-amber-500",
   clusterTextColor = "text-white",
-  linkColor = "text-blue-600",
-  iconColor = "text-gray-400",
+  linkColor = "text-stone-700",
+  iconColor = "text-stone-600",
   showInfoIcon = true,
   showViewAll = true,
   maxDisplayClusters = 10,
@@ -65,7 +65,7 @@ const ClustersCard: React.FC<ClustersCardProps> = ({
   const hasMore = clusters.length > maxDisplayClusters;
 
   return (
-    <div className={`${cardBgColor} rounded-lg shadow-sm border border-gray-200 p-6`}>
+    <div className={`${cardBgColor} rounded-lg shadow-sm border border-stone-200 p-6`}>
       {/* Header */}
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
@@ -74,8 +74,8 @@ const ClustersCard: React.FC<ClustersCardProps> = ({
           </h2>
           {showInfoIcon && (
             <FaInfoCircle 
-              className={`w-5 h-5 ${iconColor} cursor-pointer hover:text-gray-600 transition-colors`} 
-              title="Information about clusters"
+              className={`w-5 h-5 ${iconColor} cursor-help hover:text-stone-900 transition-colors`} 
+              title="Thông tin về các cụm"
             />
           )}
         </div>
@@ -96,14 +96,14 @@ const ClustersCard: React.FC<ClustersCardProps> = ({
             key={cluster.id}
             onClick={() => onClusterClick?.(cluster)}
             className={`${clusterBgColor} ${clusterTextColor} w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm`}
-            title={cluster.label || `Cluster ${index + 1}`}
+            title={cluster.label || `Cụm ${index + 1}`}
           >
             {cluster.count}
           </button>
         ))}
         {hasMore && (
           <span className={`text-sm ${descriptionColor} self-center px-2`}>
-            +{clusters.length - maxDisplayClusters} more
+            +{clusters.length - maxDisplayClusters} cụm khác
           </span>
         )}
       </div>

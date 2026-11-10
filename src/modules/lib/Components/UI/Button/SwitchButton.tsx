@@ -28,7 +28,9 @@ const SwitchButton = ({
     <label
       className={[
         "group flex h-[35px] w-[35px] items-center justify-center",
-        "overflow-hidden",
+        "overflow-hidden rounded-md",
+        "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-stone-900",
+        "dark:has-[:focus-visible]:outline-stone-100",
         disabled
           ? "cursor-not-allowed opacity-50"
           : "cursor-pointer",
@@ -111,7 +113,7 @@ interface DotProps {
 const Dot = ({ extraClass = "" }: DotProps) => (
   <span
     className={[
-      "dot h-2 w-2 shrink-0 rounded-full border-2 border-black",
+      "dot h-2 w-2 shrink-0 rounded-full border-2 border-stone-900 dark:border-stone-100",
       "transition-[width,height,border-radius] duration-200 ease-in-out",
       extraClass,
     ].join(" ")}
