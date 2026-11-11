@@ -5,6 +5,7 @@ import { FaMoon, FaSun } from "react-icons/fa6";
 
 import SwitchButton from "../Button/SwitchButton";
 import HamburgerBar from "./HambugerBar";
+import SupportRoundButton from "./SupportRoundButton";
 import SettingsMenu from "./SettingsMenu";
 import { useTheme } from "../../../hook/theme-context";
 
@@ -118,6 +119,7 @@ const Navbar = ({ children }: NavbarProps) => {
               onNavigate={() => {
                 if (window.matchMedia("(max-width: 1023px)").matches) setMenuOpen(false);
               }}
+              footer={<SupportRoundButton />}
             />
           )}
         </aside>

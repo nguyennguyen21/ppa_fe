@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import type { CSSProperties, MouseEvent } from "react";
+import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { IconType } from "react-icons";
 import { useTheme } from "../../../hook/theme-context";
@@ -106,6 +106,8 @@ export interface HamburgerBarProps {
   ) => void;
   /** Gọi sau khi người dùng chọn một mục (dùng để đóng drawer trên mobile). */
   onNavigate?: () => void;
+  /** Nội dung bổ sung hiển thị sau danh sách mục (ví dụ: nút tròn ủng hộ). */
+  footer?: ReactNode;
 }
 
 // 4. Component chính
@@ -136,6 +138,7 @@ const HamburgerBar = ({
   onActiveChange,
   onItemClick,
   onNavigate,
+  footer,
 }: HamburgerBarProps) => {
   // Lấy đường dẫn hiện tại từ React Router DOM
   const location = useLocation();
@@ -306,6 +309,8 @@ const HamburgerBar = ({
           </NavLink>
         );
       })}
+
+      {footer}
     </nav>
   );
 };
