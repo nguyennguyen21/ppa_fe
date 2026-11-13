@@ -6,7 +6,7 @@ import type { IconType } from "react-icons";
 import { useTheme } from "../../../hook/theme-context";
 
 import { MdDashboard, MdPerson } from "react-icons/md";
-import { FaUpload, FaCodeCompare, FaListCheck, FaChartSimple, FaRobot, FaCircleNodes } from "react-icons/fa6";
+import { FaUpload, FaCodeCompare, FaListCheck, FaChartSimple, FaRobot, FaCircleNodes, FaUsers } from "react-icons/fa6";
 
 // 1. Kiểu dữ liệu của từng mục menu
 export interface HamburgerBarItem {
@@ -68,6 +68,12 @@ const defaultItems: HamburgerBarItem[] = [
     label: "Hồ sơ",
     icon: MdPerson,
     to: "/profile",
+  },
+  {
+    id: "support-donors",
+    label: "Người ủng hộ",
+    icon: FaUsers,
+    to: "/support/donors",
   },
 ];
 
