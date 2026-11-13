@@ -12,6 +12,7 @@ const AiSampleLibraryPage = lazy(() => import("../../pages/AiSampleLibraryPage")
 const AiClusterPage = lazy(() => import("../../pages/AiClusterPage"));
 const ProfilePage = lazy(() => import("../../pages/ProfilePage"));
 const SupportPage = lazy(() => import("../../pages/SupportPage"));
+const SupportReceiptPage = lazy(() => import("../../pages/SupportReceiptPage"));
 
 export const publicRoutes = [
   { path: "/dashboard", element: <Dashboard /> },
@@ -25,4 +26,5 @@ export const publicRoutes = [
   { path: "/relations", element: <RelationsPage /> },
   { path: "/profile", element: <ProfilePage /> },
   { path: "/support", element: <SupportPage /> },
+  { path: "/support/receipt", element: <SupportReceiptPage /> },
 ];
