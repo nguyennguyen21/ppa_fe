@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -38,9 +37,6 @@ const SUPPORT_SPONSOR_URL =
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3001";
 
-// Các mức tiền ủng hộ gợi ý
-const PRESET_AMOUNTS = [50000, 100000, 200000, 500000];
-
 const formatVnd = (value: number) =>
   `${value.toLocaleString("vi-VN")}đ`;
 
@@ -60,6 +56,18 @@ export default function SupportPage() {
   const [error, setError] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [senderName, setSenderName] = useState("");
+
+  // Lưu tạm thông tin người chuyển và số tiền ủng hộ để tái sử dụng trên trang.
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "codex.support.donation",
+        JSON.stringify({ senderName, amount }),
+      );
+    } catch {
+      // Bỏ qua nếu trình duyệt chặn lưu trữ.
+    }
+  }, [senderName, amount]);
 
   // Nạp lại thông tin vừa lưu khi người dùng vào lại trang ủng hộ.
   useEffect(() => {
@@ -81,18 +89,6 @@ export default function SupportPage() {
       // Bỏ qua nếu dữ liệu lưu trữ bị hỏng.
     }
   }, []);
-
-  // Lưu tạm thông tin người chuyển và số tiền ủng hộ để tái sử dụng trên trang.
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "codex.support.donation",
-        JSON.stringify({ senderName, amount }),
-      );
-    } catch {
-      // Bỏ qua nếu trình duyệt chặn lưu trữ.
-    }
-  }, [senderName, amount]);
 
   // Tính số tiền hợp lệ
   const parsedAmount = useMemo(() => {
@@ -161,23 +157,23 @@ export default function SupportPage() {
         }
       );
 
-     const responseText = await response.text();
+      const responseText = await response.text();
 
-        let result: any;
+      let result: any;
 
-        try {
-          result = JSON.parse(responseText);
-        } catch {
-          console.error("API trả về HTML hoặc dữ liệu không phải JSON:", {
-            status: response.status,
-            url: response.url,
-            response: responseText,
-          });
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        console.error("API trả về HTML hoặc dữ liệu không phải JSON:", {
+          status: response.status,
+          url: response.url,
+          response: responseText,
+        });
 
-          throw new Error(
-            `API không trả về JSON (HTTP ${response.status}). Kiểm tra Backend và đường dẫn API.`
-          );
-        }
+        throw new Error(
+          `API không trả về JSON (HTTP ${response.status}). Kiểm tra Backend và đường dẫn API.`
+        );
+      }
 
       if (!response.ok || !result.success) {
         throw new Error(
@@ -364,97 +360,6 @@ export default function SupportPage() {
               </span>
             </span>
           </button>
-        </div>
-
-        {/* NHẬP SỐ TIỀN */}
-        <div className="mt-6">
-          <label
-            htmlFor="support-amount"
-            className="text-xs font-semibold uppercase tracking-wide text-stone-600"
-          >
-            Số tiền muốn ủng hộ (VNĐ)
-          </label>
-
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {PRESET_AMOUNTS.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => {
-                  setAmount(String(preset));
-                  setError("");
-                }}
-                className={`rounded-md border px-3 py-2.5 text-xs font-semibold transition-colors ${
-                  String(preset) === amount
-                    ? "border-stone-900 bg-stone-900 text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
-                }`}
-              >
-                {formatVnd(preset)}
-              </button>
-            ))}
-          </div>
-
-          <input
-            id="support-amount"
-            type="number"
-            min={1000}
-            max={50000000}
-            step={1000}
-            value={amount}
-            onChange={(event) => {
-              setAmount(event.target.value);
-              setError("");
-            }}
-            placeholder="Nhập số tiền tùy chỉnh"
-            className="mt-3 w-full rounded-md border border-stone-300 bg-white px-3 py-2.5 font-mono text-sm text-stone-900 focus:outline-2 focus:outline-stone-900"
-          />
-
-          <p className="mt-2 text-xs text-stone-500">
-            Số tiền tối thiểu 1.000đ.
-          </p>
-        </div>
-
-        {/* NHẬP TÊN NGƯỜI CHUYỂN */}
-        <div className="mt-5">
-          <label
-            htmlFor="support-sender"
-            className="text-xs font-semibold uppercase tracking-wide text-stone-600"
-          >
-            Tên người chuyển tiền
-          </label>
-
-          <input
-            id="support-sender"
-            type="text"
-            value={senderName}
-            onChange={(event) => {
-              setSenderName(event.target.value);
-              setError("");
-            }}
-            placeholder="Nhập tên người chuyển tiền"
-            className="mt-2 w-full rounded-md border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:outline-2 focus:outline-stone-900"
-          />
-
-          <p className="mt-2 text-xs text-stone-500">
-            Họ tên người chuyển khoản để quản trị viên dễ dàng đối
-            soát được thông tin người ủng hộ.
-          </p>
-        </div>
-
-        {/* TỔNG TIỀN */}
-        <div className="mt-5 flex items-center justify-between gap-3 rounded-lg bg-stone-50 p-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
-              Số tiền ủng hộ
-            </p>
-
-            <p className="mt-1 text-xl font-bold text-stone-900">
-              {formatVnd(parsedAmount)}
-            </p>
-          </div>
-
-          <FaHeart className="text-rose-500" size={22} />
         </div>
 
         {/* ================================== */}
