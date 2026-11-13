@@ -93,6 +93,57 @@ export default function SupportPage() {
     }
   }, []);
 
+  // Xử lý sau khi thanh toán thành công (SePay redirect về có ?invoice=...)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const invoice = params.get("invoice");
+
+    if (!invoice) return;
+
+    const confirmDonation = async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/payments/sepay/webhook`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              order_invoice_number: invoice,
+              transaction_status: "success",
+            }),
+          }
+        );
+
+        const responseText = await response.text();
+
+        let result: any;
+
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          throw new Error("Không thể xác nhận giao dịch ủng hộ.");
+        }
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.message || "Không thể xác nhận giao dịch ủng hộ."
+          );
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Đã xảy ra lỗi khi xác nhận ủng hộ.";
+
+        setError(message);
+      }
+    };
+
+    confirmDonation();
+  }, []);
+
   // Tính số tiền hợp lệ
   const parsedAmount = useMemo(() => {
     const value = Number(amount);

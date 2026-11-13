@@ -69,5 +69,40 @@ export const paymentController = {
                 message: error.message || 'Không thể tạo giao dịch ủng hộ.'
             });
         }
+    },
+
+    // =====================================
+    // XÁC NHẬN THANH TOÁN THÀNH CÔNG (WEBHOOK SEPAY)
+    // =====================================
+    async handleSepayWebhook(req, res) {
+        try {
+            const payload = req.body || {};
+
+            const status = payload.transaction_status || payload.status || 'success';
+            const invoiceNumber = payload.order_invoice_number;
+            const amount = payload.order_amount;
+            const senderName = payload.customer_name || payload.order_info;
+
+            const result = await paymentService.confirmDonation({
+                invoiceNumber,
+                transactionId: payload.transaction_id,
+                status,
+                amount,
+                senderName
+            });
+
+            return res.status(200).json({
+                success: true,
+                data: result
+            });
+
+        } catch (error) {
+            console.error('[SEPAY WEBHOOK]', error);
+
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Không thể xác nhận thanh toán ủng hộ.'
+            });
+        }
     }
 };
