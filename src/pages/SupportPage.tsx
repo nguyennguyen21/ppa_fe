@@ -61,18 +61,6 @@ export default function SupportPage() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [senderName, setSenderName] = useState("");
 
-  // Lưu tạm thông tin người chuyển và số tiền ủng hộ để tái sử dụng trên trang.
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "codex.support.donation",
-        JSON.stringify({ senderName, amount }),
-      );
-    } catch {
-      // Bỏ qua nếu trình duyệt chặn lưu trữ.
-    }
-  }, [senderName, amount]);
-
   // Nạp lại thông tin vừa lưu khi người dùng vào lại trang ủng hộ.
   useEffect(() => {
     try {
@@ -93,6 +81,18 @@ export default function SupportPage() {
       // Bỏ qua nếu dữ liệu lưu trữ bị hỏng.
     }
   }, []);
+
+  // Lưu tạm thông tin người chuyển và số tiền ủng hộ để tái sử dụng trên trang.
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "codex.support.donation",
+        JSON.stringify({ senderName, amount }),
+      );
+    } catch {
+      // Bỏ qua nếu trình duyệt chặn lưu trữ.
+    }
+  }, [senderName, amount]);
 
   // Tính số tiền hợp lệ
   const parsedAmount = useMemo(() => {
