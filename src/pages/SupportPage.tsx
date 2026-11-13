@@ -40,6 +40,9 @@ const API_URL =
 const formatVnd = (value: number) =>
   `${value.toLocaleString("vi-VN")}đ`;
 
+// Các mức số tiền ủng hộ nhanh
+const PRESET_AMOUNTS = [50000, 100000, 200000, 500000];
+
 // ============================================
 // COMPONENT
 // ============================================
@@ -384,6 +387,55 @@ export default function SupportPage() {
                   quét mã QR bằng ứng dụng ngân hàng.
                 </p>
               </div>
+            </div>
+
+            {/* NHẬP SỐ TIỀN */}
+            <div className="mt-6">
+              <label
+                htmlFor="support-amount"
+                className="text-xs font-semibold uppercase tracking-wide text-stone-600"
+              >
+                Số tiền muốn ủng hộ (VNĐ)
+              </label>
+
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {PRESET_AMOUNTS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => {
+                      setAmount(String(preset));
+                      setError("");
+                    }}
+                    className={`rounded-md border px-3 py-2.5 text-xs font-semibold transition-colors ${
+                      String(preset) === amount
+                        ? "border-stone-900 bg-stone-900 text-white"
+                        : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    }`}
+                  >
+                    {formatVnd(preset)}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                id="support-amount"
+                type="number"
+                min={1000}
+                max={50000000}
+                step={1000}
+                value={amount}
+                onChange={(event) => {
+                  setAmount(event.target.value);
+                  setError("");
+                }}
+                placeholder="Nhập số tiền tùy chỉnh"
+                className="mt-3 w-full rounded-md border border-stone-300 bg-white px-3 py-2.5 font-mono text-sm text-stone-900 focus:outline-2 focus:outline-stone-900"
+              />
+
+              <p className="mt-2 text-xs text-stone-500">
+                Số tiền tối thiểu 1.000đ.
+              </p>
             </div>
 
             {/* SỐ TIỀN ỦNG HỘ */}
