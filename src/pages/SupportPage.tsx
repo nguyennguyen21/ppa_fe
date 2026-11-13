@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FaArrowRight,
@@ -60,6 +60,39 @@ export default function SupportPage() {
   const [error, setError] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [senderName, setSenderName] = useState("");
+
+  // Lưu tạm thông tin người chuyển và số tiền ủng hộ để tái sử dụng trên trang.
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "codex.support.donation",
+        JSON.stringify({ senderName, amount }),
+      );
+    } catch {
+      // Bỏ qua nếu trình duyệt chặn lưu trữ.
+    }
+  }, [senderName, amount]);
+
+  // Nạp lại thông tin vừa lưu khi người dùng vào lại trang ủng hộ.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("codex.support.donation");
+      if (!raw) return;
+      const parsed = JSON.parse(
+        raw,
+      ) as { senderName?: string; amount?: string };
+      if (parsed && typeof parsed === "object") {
+        if (typeof parsed.senderName === "string") {
+          setSenderName(parsed.senderName);
+        }
+        if (typeof parsed.amount === "string") {
+          setAmount(parsed.amount);
+        }
+      }
+    } catch {
+      // Bỏ qua nếu dữ liệu lưu trữ bị hỏng.
+    }
+  }, []);
 
   // Tính số tiền hợp lệ
   const parsedAmount = useMemo(() => {
