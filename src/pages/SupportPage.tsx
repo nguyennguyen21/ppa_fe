@@ -386,6 +386,48 @@ export default function SupportPage() {
               </div>
             </div>
 
+            {/* SỐ TIỀN ỦNG HỘ */}
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-rose-100 bg-white p-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
+                  Số tiền ủng hộ
+                </p>
+
+                <p className="mt-1 text-xl font-bold text-stone-900">
+                  {formatVnd(parsedAmount)}
+                </p>
+              </div>
+
+              <FaHeart className="text-rose-500" size={22} />
+            </div>
+
+            {/* TÊN NGƯỜI CHUYỂN */}
+            <div className="mt-4">
+              <label
+                htmlFor="support-sender"
+                className="text-xs font-semibold uppercase tracking-wide text-stone-600"
+              >
+                Tên người chuyển tiền
+              </label>
+
+              <input
+                id="support-sender"
+                type="text"
+                value={senderName}
+                onChange={(event) => {
+                  setSenderName(event.target.value);
+                  setError("");
+                }}
+                placeholder="Nhập tên người chuyển tiền"
+                className="mt-2 w-full rounded-md border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:outline-2 focus:outline-stone-900"
+              />
+
+              <p className="mt-2 text-xs text-stone-500">
+                Họ tên người chuyển khoán để quản trị viên dễ dàng
+                đối soát được thông tin người ủng hộ.
+              </p>
+            </div>
+
             {error && (
               <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
                 {error}
