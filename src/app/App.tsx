@@ -2,15 +2,15 @@
 import { Suspense, useEffect, useState } from "react";
 import { Navigate, useLocation, useRoutes, type RouteObject } from "react-router-dom";
 
-import { fallbackRoutes } from "./router/fallback/fallback";
-import { publicRoutes } from "./router/public/public";
-import { privateRoutes } from "./router/private/private";
+import { fallbackRoutes } from "../router/fallback/fallback";
+import { publicRoutes } from "../router/public/public";
+import { privateRoutes } from "../router/private/private";
 
-import PublicLayout from "./modules/lib/Components/layouts/PublicLayout";
-import PrivateLayout from "./modules/lib/Components/layouts/PrivateLayout";
-import SharedLayout from "./modules/lib/Components/layouts/SharedLayout";
-import Seo from "./modules/lib/Components/Seo";
-import RouteSkeleton from "./modules/lib/Components/UI/feedback/RouteSkeleton";
+import PublicLayout from "../shared/Components/layouts/PublicLayout";
+import PrivateLayout from "../shared/Components/layouts/PrivateLayout";
+import SharedLayout from "../shared/Components/layouts/SharedLayout";
+import Seo from "../shared/Components/Seo";
+import RouteSkeleton from "../shared/Components/UI/feedback/RouteSkeleton";
 
 function App() {
   const location = useLocation();

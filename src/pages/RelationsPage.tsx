@@ -19,8 +19,8 @@ import {
 import { Link } from "react-router-dom";
 import type { Submission } from "../data/types";
 import type { PairRelation } from "../data/types";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
-import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
+import { useBackendData } from "../shared/hook/backend-data-context";
+import { useToast } from "../shared/Components/UI/feedback/Toast";
 
 // ---------------------------------------------------------------------------
 // Biểu đồ quan hệ kiểu DOLOS: node tròn màu theo nhãn (innocent/plagiarism),

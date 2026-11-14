@@ -46,7 +46,7 @@ import { python } from "@codemirror/lang-python";
 import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { tags } from "@lezer/highlight";
-import { useTheme } from "../../lib/hook/theme-context";
+import { useTheme } from "../../../shared/hook/theme-context";
 import type { CodeLanguage } from "../utils/aiClassify";
 
 export type LineTone = "ai" | "human" | "neutral";

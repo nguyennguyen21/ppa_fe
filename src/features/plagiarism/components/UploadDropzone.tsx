@@ -6,8 +6,8 @@ import {
   FaFolderTree, FaSpinner, FaTrashCan, FaMagnifyingGlass, FaEye,
 } from "react-icons/fa6";
 import { formatSize, listZipFilesWithSize } from "../utils/zip";
-import { useConfirm } from "../../lib/Components/UI/feedback/ConfirmDialog";
-import { useToast } from "../../lib/Components/UI/feedback/Toast";
+import { useConfirm } from "../../../shared/Components/UI/feedback/ConfirmDialog";
+import { useToast } from "../../../shared/Components/UI/feedback/Toast";
 
 export interface UploadedFile {
   id: string;

@@ -8,16 +8,16 @@ import {
 } from "react-icons/fa6";
 import { sampleLibrary, type LibrarySample } from "../data/aiSampleLibrary";
 import type { SampleKind } from "../data/aiSamples";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
+import { useBackendData } from "../shared/hook/backend-data-context";
 import {
   buildClusterModel,
   convexHullFor,
   kindColor,
-} from "../modules/plagiarism/utils/cluster";
+} from "../features/plagiarism/utils/cluster";
 import type {
   ClusterSample,
-} from "../modules/plagiarism/utils/cluster";
-import { analyzeCode } from "../modules/plagiarism/utils/aiClassify";
+} from "../features/plagiarism/utils/cluster";
+import { analyzeCode } from "../features/plagiarism/utils/aiClassify";
 
 const clusterColors = ["#d97706", "#0284c7", "#7c3aed", "#0d9488"];
 const kindLabels: Record<SampleKind, string> = {

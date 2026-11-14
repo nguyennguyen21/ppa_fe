@@ -3,15 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaArrowRight, FaChartSimple, FaClock, FaCodeCompare, FaDownload, FaFileLines, FaRobot, FaTable, FaUpload } from "react-icons/fa6";
 import type { Submission } from "../data/types";
 import { sampleLibrary, type LibrarySample } from "../data/aiSampleLibrary";
-import { useBackendData, languageFromFileName } from "../modules/lib/hook/backend-data-context";
-import { analyzeCode, type Verdict } from "../modules/plagiarism/utils/aiClassify";
-import { EmptyState } from "../modules/lib/Components/UI/feedback/StatePanel";
-import InfoCard from "../modules/lib/Components/UI/cart/InfoCard";
-import ClustersCard from "../modules/lib/Components/UI/cart/ClustersCard";
-import SubmissionsList from "../modules/lib/Components/UI/list/submitlist";
-import ExportButtons from "../modules/plagiarism/components/ExportButtons";
-import { exportExcel, exportPdf, nowLabel, safeFileName } from "../modules/plagiarism/utils/export";
-import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
+import { useBackendData, languageFromFileName } from "../shared/hook/backend-data-context";
+import { analyzeCode, type Verdict } from "../features/plagiarism/utils/aiClassify";
+import { EmptyState } from "../shared/Components/UI/feedback/StatePanel";
+import InfoCard from "../shared/Components/UI/cart/InfoCard";
+import ClustersCard from "../shared/Components/UI/cart/ClustersCard";
+import SubmissionsList from "../shared/Components/UI/list/submitlist";
+import ExportButtons from "../features/plagiarism/components/ExportButtons";
+import { exportExcel, exportPdf, nowLabel, safeFileName } from "../features/plagiarism/utils/export";
+import { useToast } from "../shared/Components/UI/feedback/Toast";
 
 const levelDot: Record<string, string> = {
   high: "bg-red-600",
@@ -95,7 +95,7 @@ interface AiSampleStat {
   language: string;
   codeLineCount: number;
   functionCount: number;
-  signals: import("../modules/plagiarism/utils/aiClassify").Signal[];
+  signals: import("../features/plagiarism/utils/aiClassify").Signal[];
 }
 
 const verdictName = (verdict: Verdict) =>

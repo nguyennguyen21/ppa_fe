@@ -15,7 +15,7 @@ import {
   Card,
   CardTitle,
   CardDescription,
-} from "../modules/lib/Components/UI/Button/Button";
+} from "../shared/Components/UI/Button/Button";
 
 // ============================================
 // CẤU HÌNH

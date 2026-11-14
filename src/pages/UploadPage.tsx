@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaArrowRight, FaCheck, FaSpinner, FaStop } from "react-icons/fa6";
-import UploadDropzone, { type UploadedFile } from "../modules/plagiarism/components/UploadDropzone";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
-import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
-import { useConfirm } from "../modules/lib/Components/UI/feedback/ConfirmDialog";
+import UploadDropzone, { type UploadedFile } from "../features/plagiarism/components/UploadDropzone";
+import { useBackendData } from "../shared/hook/backend-data-context";
+import { useToast } from "../shared/Components/UI/feedback/Toast";
+import { useConfirm } from "../shared/Components/UI/feedback/ConfirmDialog";
 
 // Các bước quét: chọn file → đang quét → hoàn tất (không còn bước cấu hình)
 const steps = ["Chọn file", "Đang quét", "Hoàn tất"];

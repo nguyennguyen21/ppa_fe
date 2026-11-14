@@ -9,11 +9,11 @@ import {
   FaFloppyDisk,
   FaTrashCan,
 } from "react-icons/fa6";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
-import { EmptyState } from "../modules/lib/Components/UI/feedback/StatePanel";
-import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
-import { useConfirm } from "../modules/lib/Components/UI/feedback/ConfirmDialog";
-import { Button, Card, CardTitle, Badge } from "../modules/lib/Components/UI/Button/Button";
+import { useBackendData } from "../shared/hook/backend-data-context";
+import { EmptyState } from "../shared/Components/UI/feedback/StatePanel";
+import { useToast } from "../shared/Components/UI/feedback/Toast";
+import { useConfirm } from "../shared/Components/UI/feedback/ConfirmDialog";
+import { Button, Card, CardTitle, Badge } from "../shared/Components/UI/Button/Button";
 
 interface ProfileData {
   displayName: string;

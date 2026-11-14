@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
-import { useAuth } from '../../modules/lib/hook/auth-context';
+import { useAuth } from '../../shared/hook/auth-context';
 
 
 export function ProtectedRoute({ children }: React.PropsWithChildren) {
