@@ -6,11 +6,17 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   server: {
+    allowedHosts: true,
     proxy: {
       "/api": {
         target: "http://localhost:8080",
         changeOrigin: true,
       },
+    },
+    // Backend ghi file dữ liệu vào thư mục data/ khi có giao dịch mới.
+    // Không watch thư mục này để tránh Vite full-reload trang đột ngột.
+    watch: {
+      ignored: ["**/data/**"],
     },
   },
   plugins: [

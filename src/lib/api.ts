@@ -100,7 +100,7 @@ async function readJson<T>(url: string, init: RequestInit = {}): Promise<T> {
 }
 
 // ---------------------------------------------------------------------------
-// Các hàm gọi đúng endpoint backend đang có sẵn (không thêm endpoint mới)
+// Các hàm gọi endpoint backend (giữ nguyên endpoint cũ, bổ sung batch highlight)
 // ---------------------------------------------------------------------------
 
 export const api = {
@@ -154,6 +154,21 @@ export const api = {
       `/api/v1/ai/snippets/${encodeURIComponent(String(codeId))}/highlight?threshold=${threshold}`,
     ),
 
+  /**
+   * GET /api/v1/ai/highlights?codeIds=1,2,3&threshold=0.5 — batch highlight.
+   * Một request cho tối đa 200 snippet thay vì N request riêng lẻ (giảm mạnh
+   * số request/ngày và tránh nghẽn khi assignment nhiều file).
+   */
+  getHighlights: (codeIds: Array<number | string>, threshold = 0.5) => {
+    const ids = codeIds.map((id) => String(id).trim()).filter((id) => id !== "");
+    if (ids.length === 0) {
+      return Promise.resolve<AiHighlightResponseDto[]>([]);
+    }
+    return readJson<AiHighlightResponseDto[]>(
+      `/api/v1/ai/highlights?codeIds=${encodeURIComponent(ids.join(","))}&threshold=${threshold}`,
+    );
+  },
+
   /** POST /api/v1/ai/highlight — phân tích ad-hoc (code do người dùng dán/nạp). Body: { code, language, threshold }. */
   highlightAdHoc: (code: string, language: string, threshold = 0.5) =>
     readJson<AiHighlightResponseDto>("/api/v1/ai/highlight", {
@@ -165,8 +180,39 @@ export const api = {
 
 /** Lấy lại nội dung code thật của một snippet từ backend. */
 
+/**
+ * Cache TTL cho nội dung snippet ở phía FE.
+ *
+ * <p>Mỗi lần mở một file, trước đây FE gọi lại highlight để lấy text, tốn một
+ * request dù nội dung snippet không đổi. Cache ngắn hạn này loại bỏ các request
+ * lặp lại đó (mở lại cùng file nhiều lần) mà không ảnh hưởng dữ liệu mới: sau
+ * TTL, lần mở kế tiếp sẽ tải lại từ backend.</p>
+ */
+const SNIPPET_TEXT_TTL_MS = 5 * 60 * 1000;
+const SNIPPET_TEXT_MAX_ENTRIES = 300;
+const snippetTextCache = new Map<string, { value: string | null; expiresAt: number }>();
+
 /** Text thật của một snippet: ghép từ highlight (threshold=0 → mọi dòng). */
 export async function fetchSnippetText(codeId: number | string): Promise<string | null> {
+  const key = String(codeId);
+  const cached = snippetTextCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+
+  const text = await loadSnippetText(codeId);
+
+  if (snippetTextCache.size >= SNIPPET_TEXT_MAX_ENTRIES) {
+    const oldestKey = snippetTextCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      snippetTextCache.delete(oldestKey);
+    }
+  }
+  snippetTextCache.set(key, { value: text, expiresAt: Date.now() + SNIPPET_TEXT_TTL_MS });
+  return text;
+}
+
+async function loadSnippetText(codeId: number | string): Promise<string | null> {
   const response = await api.highlightSnippet(codeId, 0);
   let total = Math.max(0, Math.floor(response.totalLines ?? 0));
   if (response.suspiciousLines) {

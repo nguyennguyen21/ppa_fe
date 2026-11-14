@@ -72,20 +72,65 @@ export const paymentController = {
     },
 
     // =====================================
+    // DANH SÁCH NGƯỜI ỦNG HỘ
+    // =====================================
+    async listDonations(req, res) {
+        try {
+            const donations = await paymentService.listDonations();
+
+            return res.status(200).json({
+                success: true,
+                data: donations
+            });
+
+        } catch (error) {
+            console.error('[LIST DONATIONS]', error);
+
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Không thể lấy danh sách người ủng hộ.'
+            });
+        }
+    },
+
+    // =====================================
     // XÁC NHẬN THANH TOÁN THÀNH CÔNG (WEBHOOK SEPAY)
     // =====================================
     async handleSepayWebhook(req, res) {
         try {
             const payload = req.body || {};
 
-            const status = payload.transaction_status || payload.status || 'success';
-            const invoiceNumber = payload.order_invoice_number;
-            const amount = payload.order_amount;
-            const senderName = payload.customer_name || payload.order_info;
+            // SePay gửi webhook theo 2 định dạng:
+            // 1) Mới: { order: {...}, transaction: {...}, notification_type: 'ORDER_PAID' }
+            // 2) Cũ/đơn giản: các trường nằm ngay trên payload
+            const order = payload.order || {};
+            const transaction = payload.transaction || {};
+
+            const status =
+                transaction.transaction_status ||
+                order.order_status ||
+                payload.transaction_status ||
+                payload.status ||
+                'success';
+
+            const invoiceNumber =
+                order.order_invoice_number ||
+                payload.order_invoice_number;
+
+            const amount = Number(
+                transaction.transaction_amount ||
+                order.order_amount ||
+                payload.order_amount ||
+                0
+            );
+
+            const senderName =
+                payload.customer_name ||
+                payload.order_info;
 
             const result = await paymentService.confirmDonation({
                 invoiceNumber,
-                transactionId: payload.transaction_id,
+                transactionId: transaction.transaction_id || payload.transaction_id,
                 status,
                 amount,
                 senderName

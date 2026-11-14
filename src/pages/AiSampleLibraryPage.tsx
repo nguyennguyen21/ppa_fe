@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  FaArrowLeft,
   FaArrowRight,
   FaCode,
   FaMagnifyingGlass,
@@ -270,12 +269,6 @@ export default function AiSampleLibraryPage() {
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
           >
             Mô hình cụm
-          </Link>
-          <Link
-            to="/ai-detect"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
-          >
-            <FaArrowLeft className="text-xs" /> Về trang chọn nhóm
           </Link>
         </div>
         </div>

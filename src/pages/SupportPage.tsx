@@ -102,6 +102,23 @@ export default function SupportPage() {
 
     const confirmDonation = async () => {
       try {
+        // Lấy tên người ủng hộ đã lưu tạm để gửi kèm khi xác nhận,
+        // vì state có thể chưa kịp nạp vào lúc effect chạy.
+        let confirmSenderName = "";
+
+        try {
+          const stored = localStorage.getItem("codex.support.donation");
+
+          if (stored) {
+            const parsed = JSON.parse(stored) as { senderName?: string };
+            if (typeof parsed?.senderName === "string") {
+              confirmSenderName = parsed.senderName;
+            }
+          }
+        } catch {
+          // Bỏ qua nếu dữ liệu lưu trữ bị hỏng.
+        }
+
         const response = await fetch(
           `${API_URL}/api/payments/sepay/webhook`,
           {
@@ -112,6 +129,7 @@ export default function SupportPage() {
             body: JSON.stringify({
               order_invoice_number: invoice,
               transaction_status: "success",
+              customer_name: confirmSenderName,
             }),
           }
         );

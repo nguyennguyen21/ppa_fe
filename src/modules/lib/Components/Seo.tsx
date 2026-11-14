@@ -38,11 +38,6 @@ const META: Record<string, PageMeta> = {
     description:
       "Trực quan hoá các cặp bài tương đồng, cụm liên kết và mức độ liên hệ giữa các bài nộp.",
   },
-  "/ai-detect": {
-    title: "Phân loại code AI — CODEX",
-    description:
-      "Phân tích 34 chỉ số tĩnh để ước lượng khả năng mã nguồn do AI sinh hoặc do người viết.",
-  },
   "/ai-detect/kho-mau": {
     title: "Kho mẫu mã nguồn — CODEX",
     description: "Thư viện mẫu code AI, người viết và hỗn hợp dùng để thử nghiệm phân loại.",

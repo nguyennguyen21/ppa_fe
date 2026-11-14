@@ -19,6 +19,12 @@ router.post(
     paymentController.createDonation
 );
 
+// Danh sách người ủng hộ
+router.get(
+    '/donations',
+    paymentController.listDonations
+);
+
 // Webhook nhận kết quả thanh toán từ SePay
 router.post(
     '/sepay/webhook',

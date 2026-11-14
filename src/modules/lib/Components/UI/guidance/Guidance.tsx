@@ -142,7 +142,6 @@ const PAGE_NAMES: Record<string, string> = {
   "/results": "Kết quả quét",
   "/compare": "So sánh",
   "/relations": "Biểu đồ quan hệ",
-  "/ai-detect": "Phân loại AI",
   "/ai-detect/kho-mau": "Kho mẫu",
   "/ai-detect/cum": "Mô hình cụm",
   "/ai-detect/analyze": "Phân tích mã nguồn",

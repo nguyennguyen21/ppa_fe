@@ -17,9 +17,11 @@ function generateDonationInvoice() {
 
 async function readDonations() {
     try {
+        // File dữ liệu đặt ở thư mục data/ ngoài src/ để Vite không watch
+        // (tránh full-page reload khi backend ghi file lúc dev).
         const filePath = path.resolve(
             path.dirname(fileURLToPath(import.meta.url)),
-            '../../data/donations.json'
+            '../../../../data/donations.json'
         );
 
         const raw = await fs.readFile(filePath, 'utf8');
@@ -37,7 +39,7 @@ async function readDonations() {
 async function writeDonations(list) {
     const filePath = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
-        '../../data/donations.json'
+        '../../../../data/donations.json'
     );
 
     await fs.writeFile(filePath, JSON.stringify(list, null, 4), 'utf8');
@@ -63,6 +65,24 @@ export async function createDonationUseCase({ amount, senderName }) {
     // URL quay về Frontend
     const resultUrl =
         `${sepayConfig.successUrl}?invoice=${encodeURIComponent(invoiceNumber)}`;
+
+    // Lưu sẵn bản ghi PENDING kèm tên người ủng hộ
+    // để danh sách người ủng hộ có tên ngay cả khi webhook không gửi tên về.
+    const donations = await readDonations();
+
+    donations.push({
+        id: `DON-${invoiceNumber}`,
+        invoiceNumber,
+        senderName: senderName?.trim() || 'Khách hàng',
+        transferContent: senderName?.trim()
+            ? `UNG HO CODEX - ${donationAmount.toLocaleString('vi-VN')}đ - ${senderName.trim()}`
+            : `UNG HO CODEX - ${donationAmount.toLocaleString('vi-VN')}đ`,
+        amount: donationAmount,
+        status: 'PENDING',
+        createdAt: new Date().toISOString()
+    });
+
+    await writeDonations(donations);
 
     // Tạo thông tin thanh toán SePay
     const fields = sepayClient.checkout.initOneTimePaymentFields({
@@ -90,6 +110,17 @@ export async function createDonationUseCase({ amount, senderName }) {
     };
 }
 
+export async function listDonationsUseCase() {
+    const donations = await readDonations();
+
+    // Mới nhất lên đầu
+    donations.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    return donations;
+}
+
 export async function confirmDonationUseCase({ invoiceNumber, transactionId, status, amount, senderName }) {
     const donations = await readDonations();
 
@@ -97,7 +128,28 @@ export async function confirmDonationUseCase({ invoiceNumber, transactionId, sta
         (item) => item.invoiceNumber === invoiceNumber
     );
 
-    const isSuccess = status === 'success' || status === 'SUCCESS';
+    // Các trạng thái SePay xem là thành công:
+    // - Frontend tự xác nhận: 'success'
+    // - Webhook mới: transaction_status 'APPROVED' / order_status 'CAPTURED'
+    const successStatuses = [
+        'success',
+        'SUCCESS',
+        'CAPTURED',
+        'APPROVED',
+        'PAID',
+        'COMPLETED'
+    ];
+
+    const failedStatuses = [
+        'failed',
+        'FAILED',
+        'DECLINED',
+        'CANCELLED',
+        'CANCELED'
+    ];
+
+    const isSuccess = successStatuses.includes(String(status).toUpperCase());
+    const isFailed = failedStatuses.includes(String(status).toUpperCase());
     const now = new Date().toISOString();
 
     let updatedDonation;
@@ -105,7 +157,9 @@ export async function confirmDonationUseCase({ invoiceNumber, transactionId, sta
     if (donationIndex >= 0) {
         updatedDonation = {
             ...donations[donationIndex],
-            status: isSuccess ? 'SUCCESS' : 'FAILED',
+            // Cập nhật tên người ủng hộ nếu webhook gửi về tên mới.
+            senderName: senderName?.trim() || donations[donationIndex].senderName,
+            status: isFailed ? 'FAILED' : (isSuccess ? 'SUCCESS' : donations[donationIndex].status),
             updatedAt: now
         };
 
@@ -114,10 +168,10 @@ export async function confirmDonationUseCase({ invoiceNumber, transactionId, sta
         updatedDonation = {
             id: `DON-${Date.now()}`,
             invoiceNumber: invoiceNumber || `DON-${Date.now()}`,
-            senderName: senderName || 'Khách hàng',
+            senderName: senderName?.trim() || 'Khách hàng',
             transferContent: `UNG HO CODEX - ${Number(amount) || 0}đ - ${senderName || ''}`.trim(),
             amount: Number(amount) || 0,
-            status: isSuccess ? 'SUCCESS' : 'FAILED',
+            status: isFailed ? 'FAILED' : (isSuccess ? 'SUCCESS' : 'PENDING'),
             createdAt: now
         };
 

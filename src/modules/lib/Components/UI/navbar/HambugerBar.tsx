@@ -43,7 +43,7 @@ const defaultItems: HamburgerBarItem[] = [
     id: "ai-detect",
     label: "Phân loại AI",
     icon: FaRobot,
-    to: "/ai-detect",
+    to: "/ai-detect/kho-mau",
   },
   {
     id: "ai-cluster",

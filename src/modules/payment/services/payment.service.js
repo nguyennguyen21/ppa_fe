@@ -1,6 +1,10 @@
 
 import { createPaymentUseCase } from '../usecases/create-payment.usecase.js';
-import { createDonationUseCase, confirmDonationUseCase } from '../usecases/create-donation.usecase.js';
+import {
+    createDonationUseCase,
+    confirmDonationUseCase,
+    listDonationsUseCase
+} from '../usecases/create-donation.usecase.js';
 
 export const paymentService = {
     async createPayment(params) {
@@ -13,5 +17,9 @@ export const paymentService = {
 
     async confirmDonation(params) {
         return await confirmDonationUseCase(params);
+    },
+
+    async listDonations() {
+        return await listDonationsUseCase();
     }
 };

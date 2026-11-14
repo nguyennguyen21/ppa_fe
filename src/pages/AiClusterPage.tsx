@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  FaArrowLeft,
   FaCircleNodes,
   FaDiagramProject,
   FaMagnifyingGlassChart,
@@ -150,12 +149,7 @@ export default function AiClusterPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
             CODEX / Mô hình cụm
           </p>
-          <Link
-            to="/ai-detect"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
-          >
-            <FaArrowLeft className="text-xs" /> Về trang phân loại
-          </Link>
+
         </div>
         <h1 className="relative mt-2 flex items-center gap-3 font-serif text-4xl font-semibold tracking-tight text-stone-900">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-sky-500 to-violet-500 text-white shadow-lg shadow-amber-500/20">

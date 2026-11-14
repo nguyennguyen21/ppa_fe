@@ -2,8 +2,10 @@
 /**
  * Nguồn dữ liệu THẬT từ backend Spring Boot.
  *
- * - Backend không bị sửa: chỉ gọi đúng các endpoint có sẵn của module presentation
- *   (/api/v1/similarity/results, /api/v1/snippets/upload, /api/v1/plagiarism, /api/v1/actors…).
+ * - Backend: giữ nguyên các endpoint cũ và BỔ SUNG endpoint batch/cache/job
+ *   (ví dụ /api/v1/ai/highlights, /api/v1/actors/page, /api/v1/jobs/analysis).
+ *   Các endpoint cũ (/api/v1/similarity/results, /api/v1/snippets/upload,
+ *   /api/v1/plagiarism, /api/v1/actors…) vẫn dùng bình thường.
  * - Dữ liệu mock bị XÓA (src/data/mock.ts / pairRelations.ts): các trang lấy
  *   Submission, PairRelation, hoạt động gần đây… từ response thật của backend.
  * - Giao diện UI của các trang giữ nguyên 100%, chỉ đổi nguồn dữ liệu.
@@ -25,6 +27,7 @@ import {
   api,
   fetchSnippetText,
   type ActorResponseDto,
+  type AiHighlightResponseDto,
   type BatchUploadResultDto,
   type SimilarityCalculationResponseDto,
 } from "../../../lib/api";
@@ -518,13 +521,43 @@ export function BackendDataProvider({ children }: { children: ReactNode }) {
     setAiLoading(true);
     void (async () => {
       const entries = Array.from(codeIds);
+      const missing = entries.filter((codeId) => aiCacheRef.current.get(codeId) == null);
+
+      // Batch trước: gom tối đa 200 snippet vào MỘT request thay vì N request
+      // riêng lẻ. Đây là thay đổi thực sự làm giảm số request/ngày của FE.
+      const batchHighlights = new Map<number, AiHighlightResponseDto>();
+      if (missing.length > 0) {
+        const chunks: number[][] = [];
+        for (let i = 0; i < missing.length; i += 200) {
+          chunks.push(missing.slice(i, i + 200));
+        }
+        try {
+          const responses = await Promise.all(
+            chunks.map((chunk) => api.getHighlights(chunk, 0.5)),
+          );
+          for (const response of responses) {
+            for (const item of response) {
+              if (item?.codeId != null) {
+                batchHighlights.set(Number(item.codeId), item);
+              }
+            }
+          }
+        } catch {
+          // Batch lỗi (ví dụ backend cũ chưa có endpoint): bỏ qua để vòng lặp
+          // từng snippet bên dưới chạy như hành vi cũ.
+        }
+      }
+
       const settled = await Promise.all(
         entries.map(async (codeId) => {
           let cached = aiCacheRef.current.get(codeId);
           if (cached == null) {
             cached = null;
+            // Fallback: id không có trong batch (snippet lỗi/không tồn tại)
+            // vẫn gọi riêng để giữ nguyên hành vi cũ.
+            const batchItem = batchHighlights.get(codeId);
             try {
-              const highlight = await api.highlightSnippet(codeId, 0.5);
+              const highlight = batchItem ?? (await api.highlightSnippet(codeId, 0.5));
               if (highlight) {
                 cached = {
                   codeId,
@@ -545,7 +578,15 @@ export function BackendDataProvider({ children }: { children: ReactNode }) {
         }),
       );
       if (!cancelled) {
-        setAiResults(settled.filter((item): item is AiFileResult => item != null));
+        // Ghép kết quả về đúng thứ tự codeId ban đầu (index-based) để thứ tự
+        // hiển thị không phụ thuộc vào thời điểm từng request hoàn tất và
+        // không phụ thuộc vào hành vi ngầm của Promise.all. Filter null vẫn
+        // giữ nguyên logic cũ: snippet fetch lỗi thì bị loại khỏi danh sách.
+        setAiResults(
+          entries
+            .map((_codeId, index) => settled[index])
+            .filter((item): item is AiFileResult => item != null),
+        );
         setAiLoading(false);
       }
     })();

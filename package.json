@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "node src/modules/payment/server.js",
+    "dev:all": "concurrently -k -n FRONTEND,BACKEND -c blue,green \"npm run dev\" \"npm run dev:backend\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -23,6 +25,9 @@
     "@codemirror/view": "^6.43.15",
     "@lezer/highlight": "^1.2.5",
     "@tailwindcss/vite": "^4.3.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
     "jszip": "^3.10.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -30,6 +35,7 @@
     "react-icons": "^5.7.0",
     "react-router-dom": "^7.18.4",
     "react-syntax-highlighter": "^16.1.2",
+    "sepay-pg-node": "^1.0.0",
     "tailwindcss": "^4.3.3",
     "xlsx": "^0.18.5"
   },
@@ -44,6 +50,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react": "^6.1.1",
     "babel-plugin-react-compiler": "^1.0.0",
+    "concurrently": "^10.0.7",
     "eslint": "^10.10.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.6",

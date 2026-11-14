@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 import paymentRoutes from './routes/payment.routes.js';
+import { paymentController } from './controllers/payment.controller.js';
 
 dotenv.config();
 
@@ -38,6 +39,11 @@ app.locals.getOrderById = async (orderId) => {
 
 // Routes thanh toán
 app.use('/api/payments', paymentRoutes);
+
+// SePay đôi khi POST webhook về đúng tên miền nhưng không kèm path
+// (URL webhook cấu hình trong dashboard SePay). Chấp nhận cả ở gốc '/'
+// để không bỏ sót thông báo thanh toán.
+app.post('/', paymentController.handleSepayWebhook);
 
 // Health check
 app.get('/health', (req, res) => {

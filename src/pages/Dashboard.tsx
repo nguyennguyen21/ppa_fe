@@ -289,10 +289,10 @@ function AiStatsSection() {
             <FaDownload /> Xuất Excel
           </button>
           <Link
-            to="/ai-detect"
+            to="/ai-detect/kho-mau"
             className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
           >
-            Mở Phân loại AI <FaArrowRight className="text-xs" />
+            Mở kho mẫu AI <FaArrowRight className="text-xs" />
           </Link>
         </div>
       </div>
@@ -843,7 +843,6 @@ export default function Dashboard() {
           <AiStatsSection />
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {[
-              { to: "/ai-detect", title: "Phân loại AI / người viết", desc: "Chấm 34 chỉ số tĩnh để phát hiện dấu hiệu code do AI sinh." },
               { to: "/ai-detect/kho-mau", title: "Kho mẫu hệ thống", desc: "Duyệt toàn bộ tệp mẫu AI, người viết và hỗn hợp." },
               { to: "/ai-detect/cum", title: "Mô hình cụm", desc: "Xem cụm mẫu để hiểu xu hướng viết của từng nhóm." },
               { to: "/ai-detect/analyze?mau=custom", title: "Phân tích mã của tôi", desc: "Nạp file hoặc dán code để chấm ngay trên trình duyệt." },
@@ -914,7 +913,6 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
           { to: "/upload", title: "Nạp bài nộp mới", desc: "Tải lên file, thư mục hoặc zip để chạy một đợt quét." },
-          { to: "/ai-detect", title: "Phân loại AI / người viết", desc: "Chấm 34 chỉ số tĩnh để phát hiện dấu hiệu code do AI sinh." },
           { to: "/compare", title: "So sánh hai đoạn code", desc: "Đối chiếu trực tiếp và xem chỗ giống, chỗ khác." },
           { to: "/results", title: "Xem kết quả chi tiết", desc: "Lọc theo nhãn, tìm kiếm và sắp xếp theo mức tương đồng." },
         ].map((c) => (

@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaArrowRight, FaHeart, FaPrint } from "react-icons/fa6";
 import { Card, CardTitle, CardDescription } from "../modules/lib/Components/UI/Button/Button";
-import donations from "../data/donations.json";
 
 interface DonationRecord {
   id?: string;
@@ -12,11 +12,72 @@ interface DonationRecord {
   createdAt?: string;
 }
 
-const donationList = (
-  Array.isArray(donations) ? donations : []
-) as DonationRecord[];
+// Địa chỉ Node.js Backend
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 export default function SupportDonorsPage() {
+  const [donations, setDonations] = useState<DonationRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Tải danh sách người ủng hộ từ Backend (dữ liệu luôn mới nhất).
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDonations = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_URL}/api/payments/donations`);
+
+        const responseText = await response.text();
+
+        let result: any;
+
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          throw new Error(
+            `API không trả về JSON (HTTP ${response.status}). Kiểm tra Backend và đường dẫn API.`
+          );
+        }
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.message || "Không thể lấy danh sách người ủng hộ."
+          );
+        }
+
+        if (!cancelled) {
+          setDonations(
+            Array.isArray(result.data) ? (result.data as DonationRecord[]) : []
+          );
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message =
+            err instanceof Error
+              ? err.message
+              : "Đã xảy ra lỗi khi tải danh sách người ủng hộ.";
+
+          setError(message);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadDonations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* HEADER */}
@@ -54,7 +115,17 @@ export default function SupportDonorsPage() {
           liệu.
         </CardDescription>
 
-        {donationList.length === 0 ? (
+        {loading ? (
+          <div className="mt-5 rounded-lg border border-stone-200 bg-[#fbfbfa] p-6 text-center">
+            <p className="text-sm font-semibold text-stone-900">
+              Đang tải danh sách...
+            </p>
+          </div>
+        ) : error ? (
+          <div className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-xs text-red-700">
+            {error}
+          </div>
+        ) : donations.length === 0 ? (
           <div className="mt-5 rounded-lg border border-stone-200 bg-[#fbfbfa] p-6 text-center">
             <FaHeart className="mx-auto text-rose-400" size={22} />
 
@@ -69,7 +140,7 @@ export default function SupportDonorsPage() {
           </div>
         ) : (
           <div className="mt-5 space-y-3">
-            {donationList.map((donation, index) => (
+            {donations.map((donation, index) => (
               <div
                 key={donation.id ?? `donation-${index}`}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-[#fbfbfa] p-4"
