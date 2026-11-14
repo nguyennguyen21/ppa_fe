@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaArrowRight, FaHeart, FaPrint } from "react-icons/fa6";
-import { Card, CardTitle, CardDescription } from "../modules/lib/Components/UI/Button/Button";
+import { Card, CardTitle, CardDescription } from "../shared/Components/UI/Button/Button";
 
 interface DonationRecord {
   id?: string;

@@ -1,15 +1,15 @@
 
 import { createRoot } from 'react-dom/client'
-import './index.css'
+import '../index.css'
 import App from './App.tsx'
 import React from 'react'
 import { BrowserRouter } from 'react-router-dom'
-import { ThemeProvider } from './modules/lib/hook/theme-context'
-import { PrefsProvider } from './modules/lib/hook/prefs-context'
-import { ToastProvider } from './modules/lib/Components/UI/feedback/Toast'
-import { ConfirmProvider } from './modules/lib/Components/UI/feedback/ConfirmDialog'
-import { GuidanceProvider } from './modules/lib/Components/UI/guidance/Guidance'
-import { BackendDataProvider } from './modules/lib/hook/backend-data-context'
+import { ThemeProvider } from '../shared/hook/theme-context'
+import { PrefsProvider } from '../shared/hook/prefs-context'
+import { ToastProvider } from '../shared/Components/UI/feedback/Toast'
+import { ConfirmProvider } from '../shared/Components/UI/feedback/ConfirmDialog'
+import { GuidanceProvider } from '../shared/Components/UI/guidance/Guidance'
+import { BackendDataProvider } from '../shared/hook/backend-data-context'
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

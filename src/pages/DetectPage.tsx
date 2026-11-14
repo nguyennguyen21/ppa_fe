@@ -18,12 +18,12 @@ import {
 } from "react-icons/fa6";
 import { samples, type SampleKind } from "../data/aiSamples";
 import { findLibrarySample, samplesOfKind, type LibrarySample } from "../data/aiSampleLibrary";
-import CodeEditor from "../modules/plagiarism/components/CodeEditor";
-import { InfoTip } from "../modules/lib/Components/UI/feedback/Tooltip";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
+import CodeEditor from "../features/plagiarism/components/CodeEditor";
+import { InfoTip } from "../shared/Components/UI/feedback/Tooltip";
+import { useBackendData } from "../shared/hook/backend-data-context";
 import { api, type AiHighlightResponseDto } from "../lib/api";
-import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
-import { useConfirm } from "../modules/lib/Components/UI/feedback/ConfirmDialog";
+import { useToast } from "../shared/Components/UI/feedback/Toast";
+import { useConfirm } from "../shared/Components/UI/feedback/ConfirmDialog";
 import {
   analyzeCode,
   analyzeLine,
@@ -32,7 +32,7 @@ import {
   METRIC_GROUPS,
   type AnalysisResult,
   type Verdict,
-} from "../modules/plagiarism/utils/aiClassify";
+} from "../features/plagiarism/utils/aiClassify";
 const verdictStyle: Record<
   Verdict,
   { label: string; caption: string; icon: typeof FaRobot; text: string; bg: string; ring: string }

@@ -2,12 +2,12 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCodeCompare, FaMagnifyingGlass, FaSliders, FaXmark } from "react-icons/fa6";
 import type { Submission } from "../data/types";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
-import PaginationControl from "../modules/lib/Components/UI/Pagination/PaginationControl";
-import ItemsPerPageSelector from "../modules/lib/Components/UI/Selector/ItemsPerPageSelector";
-import { EmptyState } from "../modules/lib/Components/UI/feedback/StatePanel";
-import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
-import { usePrefs } from "../modules/lib/hook/prefs-context";
+import { useBackendData } from "../shared/hook/backend-data-context";
+import PaginationControl from "../shared/Components/UI/Pagination/PaginationControl";
+import ItemsPerPageSelector from "../shared/Components/UI/Selector/ItemsPerPageSelector";
+import { EmptyState } from "../shared/Components/UI/feedback/StatePanel";
+import { useToast } from "../shared/Components/UI/feedback/Toast";
+import { usePrefs } from "../shared/hook/prefs-context";
 
 type SortKey = "similarity" | "fileName" | "uploadedAt";
 type LabelFilter = "all" | Submission["label"];

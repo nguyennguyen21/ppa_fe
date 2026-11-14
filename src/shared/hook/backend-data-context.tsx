@@ -21,16 +21,17 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
-import type { Submission } from "../../../data/types";
-import type { PairRelation } from "../../../data/types";
+import type { Submission } from "../../data/types";
+import type { PairRelation } from "../../data/types";
 import {
   api,
   fetchSnippetText,
+  waitForAnalysisJob,
   type ActorResponseDto,
   type AiHighlightResponseDto,
   type BatchUploadResultDto,
   type SimilarityCalculationResponseDto,
-} from "../../../lib/api";
+} from "../../lib/api";
 
 // ---------------------------------------------------------------------------
 // Kiểu dữ liệu
@@ -670,15 +671,36 @@ export function BackendDataProvider({ children }: { children: ReactNode }) {
       }
 
       if (!shouldAbort && results.length > 0) {
-        try {
-          await api.detectTokenClones(assignmentIdNow);
-        } catch {
-          // Vẫn tiếp tục tính tương đồng dù phát hiện clone bị lỗi.
+        // Phát hiện clone qua hàng đợi + SSE (không giữ HTTP connection trong
+        // lúc backend xử lý). Lỗi được bỏ qua để vẫn tiếp tục tính tương đồng.
+        if (shouldContinue?.() !== false) {
+          try {
+            const cloneJob = await api.submitAnalysisJob({
+              assignmentId: assignmentIdNow,
+              type: "TOKEN_CLONE",
+            });
+            await waitForAnalysisJob(cloneJob.jobId);
+          } catch {
+            // Vẫn tiếp tục tính tương đồng dù phát hiện clone bị lỗi.
+          }
         }
-        try {
-          await api.calculateSimilarity(assignmentIdNow);
-        } catch {
-          // Bỏ qua — người dùng có thể Để loadFor thử lại khi trang tải lại.
+
+        // Tính tương đồng qua hàng đợi + SSE; kết quả job (nếu có) dùng luôn
+        // để cập nhật UI ngay khi backend báo COMPLETED (thời gian thực).
+        let similarityResult: SimilarityCalculationResponseDto | null = null;
+        if (shouldContinue?.() !== false) {
+          try {
+            const similarityJob = await api.submitAnalysisJob({
+              assignmentId: assignmentIdNow,
+              type: "SIMILARITY",
+            });
+            const completed = await waitForAnalysisJob(similarityJob.jobId);
+            if (completed.result && typeof completed.result === "object") {
+              similarityResult = completed.result as SimilarityCalculationResponseDto;
+            }
+          } catch {
+            // Bỏ qua — người dùng có thể Để loadFor thử lại khi trang tải lại.
+          }
         }
 
         const mergedCatalog = { ...readCatalog(), ...catalogUpdate };
@@ -686,7 +708,12 @@ export function BackendDataProvider({ children }: { children: ReactNode }) {
         writeStored(LS_CATALOG_KEY, mergedCatalog);
 
         try {
-          const snapshot = await api.getSimilarityResults(assignmentIdNow);
+          let snapshot: SimilarityCalculationResponseDto;
+          if (similarityResult) {
+            snapshot = similarityResult;
+          } else {
+            snapshot = await api.getSimilarityResults(assignmentIdNow);
+          }
           let actors: ActorResponseDto[] = [];
           try {
             actors = await api.getActors();

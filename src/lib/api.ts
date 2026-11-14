@@ -53,6 +53,31 @@ export interface TokenCloneDetectionResponseDto {
   executedAt: string;
 }
 
+// ---------------------------------------------------------------------------
+// Job queue / SSE (backend: POST /api/v1/jobs/analysis, GET .../{jobId}/events)
+// ---------------------------------------------------------------------------
+
+export interface AnalysisJobRequestDto {
+  assignmentId: string;
+  type?: "SIMILARITY" | "TOKEN_CLONE" | "AST";
+  threshold?: number;
+}
+
+export interface AnalysisJobResponseDto {
+  jobId: string;
+  assignmentId: string;
+  type: string;
+  status: string;
+  attempts: number;
+  threshold?: number | null;
+  result?: unknown;
+  errorMessage?: string | null;
+  createdAt?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  terminal: boolean;
+}
+
 export interface ActorResponseDto {
   actorId: number;
   actorCode: string | null;
@@ -176,6 +201,22 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, language, threshold }),
     }),
+
+  /** POST /api/v1/jobs/analysis — đưa job phân tích vào hàng đợi, trả HTTP 202 + jobId. */
+  submitAnalysisJob: (request: AnalysisJobRequestDto) =>
+    readJson<AnalysisJobResponseDto>("/api/v1/jobs/analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    }),
+
+  /** GET /api/v1/jobs/analysis/{jobId} — trạng thái + kết quả (nếu xong). */
+  getAnalysisJob: (jobId: string) =>
+    readJson<AnalysisJobResponseDto>(`/api/v1/jobs/analysis/${encodeURIComponent(jobId)}`),
+
+  /** GET /api/v1/jobs/analysis?limit= — danh sách job mới nhất. */
+  listAnalysisJobs: (limit = 20) =>
+    readJson<AnalysisJobResponseDto[]>(`/api/v1/jobs/analysis?limit=${limit}`),
 };
 
 /** Lấy lại nội dung code thật của một snippet từ backend. */
@@ -228,4 +269,90 @@ async function loadSnippetText(codeId: number | string): Promise<string | null> 
     return buffer.join("\n");
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Realtime: nghe trạng thái job qua SSE (không polling khi kết nối còn sống).
+// ---------------------------------------------------------------------------
+
+/** Mở kết nối SSE tới backend cho một job; trả về hàm huỷ. */
+export function subscribeAnalysisJobEvents(
+  jobId: string,
+  handlers: {
+    onEvent?: (job: AnalysisJobResponseDto) => void;
+    onTerminal?: (job: AnalysisJobResponseDto) => void;
+    onError?: (error: unknown) => void;
+  } = {},
+): () => void {
+  const source = new EventSource(`/api/v1/jobs/analysis/${encodeURIComponent(jobId)}/events`);
+  const listener = (event: MessageEvent) => {
+    try {
+      const job = JSON.parse(event.data) as AnalysisJobResponseDto;
+      handlers.onEvent?.(job);
+      if (job.terminal) {
+        source.close();
+        handlers.onTerminal?.(job);
+      }
+    } catch (error) {
+      handlers.onError?.(error);
+    }
+  };
+  source.addEventListener("job", listener as EventListener);
+  source.onerror = (error) => {
+    handlers.onError?.(error);
+  };
+  return () => source.close();
+}
+
+/**
+ * Chờ job kết thúc bằng SSE; nếu SSE lỗi thì fallback polling nhẹ (2s/lần)
+ * để không làm mất dữ liệu. Reject khi job FAILED.
+ */
+export function waitForAnalysisJob(
+  jobId: string,
+  onEvent?: (job: AnalysisJobResponseDto) => void,
+): Promise<AnalysisJobResponseDto> {
+  return new Promise<AnalysisJobResponseDto>((resolve, reject) => {
+    let settled = false;
+    let source: EventSource | null = null;
+    let pollTimer: number | null = null;
+
+    const finish = (job: AnalysisJobResponseDto) => {
+      if (settled) return;
+      settled = true;
+      source?.close();
+      if (pollTimer !== null) window.clearInterval(pollTimer);
+      if (job.status === "FAILED") {
+        reject(new Error(job.errorMessage || `Analysis job ${jobId} failed`));
+      } else {
+        resolve(job);
+      }
+    };
+
+    source = new EventSource(`/api/v1/jobs/analysis/${encodeURIComponent(jobId)}/events`);
+    source.addEventListener("job", ((event: MessageEvent) => {
+      try {
+        const job = JSON.parse(event.data) as AnalysisJobResponseDto;
+        onEvent?.(job);
+        if (job.terminal) finish(job);
+      } catch {
+        // Bỏ qua lỗi parse tạm thời.
+      }
+    }) as EventListener);
+
+    source.onerror = () => {
+      if (pollTimer !== null || settled) return;
+      pollTimer = window.setInterval(() => {
+        void (async () => {
+          try {
+            const job = await api.getAnalysisJob(jobId);
+            onEvent?.(job);
+            if (job.terminal) finish(job);
+          } catch {
+            // Thử lại ở chu kỳ sau.
+          }
+        })();
+      }, 2000);
+    };
+  });
 }

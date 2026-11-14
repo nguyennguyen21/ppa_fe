@@ -13,12 +13,12 @@ import {
   type LibrarySample,
 } from "../data/aiSampleLibrary";
 import type { SampleKind } from "../data/aiSamples";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
+import { useBackendData } from "../shared/hook/backend-data-context";
 import {
   analyzeCode,
   analyzeLine,
   type AnalysisResult,
-} from "../modules/plagiarism/utils/aiClassify";
+} from "../features/plagiarism/utils/aiClassify";
 
 const kindMeta = {
   ai: {

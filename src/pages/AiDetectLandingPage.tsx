@@ -9,8 +9,8 @@ import {
 } from "react-icons/fa6";
 import { samples, sampleInfo, type SampleKind } from "../data/aiSamples";
 import { sampleLibrary, samplesOfKind } from "../data/aiSampleLibrary";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
-import { analyzeCode, type AnalysisResult } from "../modules/plagiarism/utils/aiClassify";
+import { useBackendData } from "../shared/hook/backend-data-context";
+import { analyzeCode, type AnalysisResult } from "../features/plagiarism/utils/aiClassify";
 
 interface LandingCardData {
   id: string;

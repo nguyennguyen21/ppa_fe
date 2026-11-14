@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { FaArrowRight, FaHeart, FaPrint } from "react-icons/fa6";
-import { Button, Card, CardTitle, CardDescription } from "../modules/lib/Components/UI/Button/Button";
+import { Button, Card, CardTitle, CardDescription } from "../shared/Components/UI/Button/Button";
 
 // ============================================
 // BIÊN LAI ỦNG HỘ CODEX

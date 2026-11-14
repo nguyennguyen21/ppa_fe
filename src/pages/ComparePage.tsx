@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FaArrowLeft, FaArrowsLeftRight, FaCheck, FaCodeCompare, FaCopy, FaLink, FaPrint } from "react-icons/fa6";
 import type { Submission } from "../data/types";
-import RouteSkeleton from "../modules/lib/Components/UI/feedback/RouteSkeleton";
-import { useBackendData } from "../modules/lib/hook/backend-data-context";
-import { useToast } from "../modules/lib/Components/UI/feedback/Toast";
-import { usePrefs } from "../modules/lib/hook/prefs-context";
+import RouteSkeleton from "../shared/Components/UI/feedback/RouteSkeleton";
+import { useBackendData } from "../shared/hook/backend-data-context";
+import { useToast } from "../shared/Components/UI/feedback/Toast";
+import { usePrefs } from "../shared/hook/prefs-context";
 
 // ---------------------------------------------------------------------------
 // Đối chiếu ở mức dòng:
