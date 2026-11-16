@@ -1,11 +1,11 @@
-/**
- * Lớp API gọi thẳng các endpoint có sẵn của backend Spring Boot (module presentation).
- * Backend KHÔNG bị chỉnh sửa — FE chỉ gửi HTTP request đúng như backend đang cung cấp,
- * qua Vite dev-proxy "/api" → http://localhost:8080 (xem vite.config.ts).
+﻿/**
+ * Lá»›p API gá»i tháº³ng cÃ¡c endpoint cÃ³ sáºµn cá»§a backend Spring Boot (module presentation).
+ * Backend KHÃ”NG bá»‹ chá»‰nh sá»­a â€” FE chá»‰ gá»­i HTTP request Ä‘Ãºng nhÆ° backend Ä‘ang cung cáº¥p,
+ * qua Vite dev-proxy "/api" â†’ http://localhost:8080 (xem vite.config.ts).
  */
 
 // ---------------------------------------------------------------------------
-// Kiểu dữ liệu khớp với DTO phía backend (application/dto/response)
+// Kiá»ƒu dá»¯ liá»‡u khá»›p vá»›i DTO phÃ­a backend (application/dto/response)
 // ---------------------------------------------------------------------------
 
 export interface SimilarityPairDto {
@@ -119,21 +119,21 @@ async function readJson<T>(url: string, init: RequestInit = {}): Promise<T> {
     } catch {
       detail = "";
     }
-    throw new Error(`HTTP ${response.status} ${url}${detail ? ` — ${detail}` : ""}`);
+    throw new Error(`HTTP ${response.status} ${url}${detail ? ` â€” ${detail}` : ""}`);
   }
   return (await response.json()) as T;
 }
 
 // ---------------------------------------------------------------------------
-// Các hàm gọi endpoint backend (giữ nguyên endpoint cũ, bổ sung batch highlight)
+// CÃ¡c hÃ m gá»i endpoint backend (giá»¯ nguyÃªn endpoint cÅ©, bá»• sung batch highlight)
 // ---------------------------------------------------------------------------
 
 export const api = {
-  /** GET /api/v1/actors — danh sách actor thật trong DB. */
+  /** GET /api/v1/actors â€” danh sÃ¡ch actor tháº­t trong DB. */
   getActors: () =>
     readJson<ActorResponseDto[]>("/api/v1/actors"),
 
-  /** GET /api/v1/similarity/results/{assignmentId} — snapshot tương đồng (backend tự tính khi cần). */
+  /** GET /api/v1/similarity/results/{assignmentId} â€” snapshot tÆ°Æ¡ng Ä‘á»“ng (backend tá»± tÃ­nh khi cáº§n). */
   getSimilarityResults: (assignmentId: string) =>
     readJson<SimilarityCalculationResponseDto>(
       `/api/v1/similarity/results/${encodeURIComponent(assignmentId)}`,
@@ -153,7 +153,7 @@ export const api = {
       { method: "POST" },
     ),
 
-  /** POST /api/v1/snippets/upload — form-data, mỗi lượt một file. */
+  /** POST /api/v1/snippets/upload â€” form-data, má»—i lÆ°á»£t má»™t file. */
   uploadSnippet: (input: {
     fileName: string;
     blob: Blob;
@@ -173,16 +173,16 @@ export const api = {
     return readJson<BatchUploadResponseDto>("/api/v1/snippets/upload", { method: "POST", body: form });
   },
 
-  /** GET /api/v1/ai/snippets/{codeId}/highlight?threshold=0 — trả về mỗi dòng kèm nội dung thật. */
+  /** GET /api/v1/ai/snippets/{codeId}/highlight?threshold=0 â€” tráº£ vá» má»—i dÃ²ng kÃ¨m ná»™i dung tháº­t. */
   highlightSnippet: (codeId: number | string, threshold = 0) =>
     readJson<AiHighlightResponseDto>(
       `/api/v1/ai/snippets/${encodeURIComponent(String(codeId))}/highlight?threshold=${threshold}`,
     ),
 
   /**
-   * GET /api/v1/ai/highlights?codeIds=1,2,3&threshold=0.5 — batch highlight.
-   * Một request cho tối đa 200 snippet thay vì N request riêng lẻ (giảm mạnh
-   * số request/ngày và tránh nghẽn khi assignment nhiều file).
+   * GET /api/v1/ai/highlights?codeIds=1,2,3&threshold=0.5 â€” batch highlight.
+   * Má»™t request cho tá»‘i Ä‘a 200 snippet thay vÃ¬ N request riÃªng láº» (giáº£m máº¡nh
+   * sá»‘ request/ngÃ y vÃ  trÃ¡nh ngháº½n khi assignment nhiá»u file).
    */
   getHighlights: (codeIds: Array<number | string>, threshold = 0.5) => {
     const ids = codeIds.map((id) => String(id).trim()).filter((id) => id !== "");
@@ -194,7 +194,7 @@ export const api = {
     );
   },
 
-  /** POST /api/v1/ai/highlight — phân tích ad-hoc (code do người dùng dán/nạp). Body: { code, language, threshold }. */
+  /** POST /api/v1/ai/highlight â€” phÃ¢n tÃ­ch ad-hoc (code do ngÆ°á»i dÃ¹ng dÃ¡n/náº¡p). Body: { code, language, threshold }. */
   highlightAdHoc: (code: string, language: string, threshold = 0.5) =>
     readJson<AiHighlightResponseDto>("/api/v1/ai/highlight", {
       method: "POST",
@@ -202,7 +202,7 @@ export const api = {
       body: JSON.stringify({ code, language, threshold }),
     }),
 
-  /** POST /api/v1/jobs/analysis — đưa job phân tích vào hàng đợi, trả HTTP 202 + jobId. */
+  /** POST /api/v1/jobs/analysis â€” Ä‘Æ°a job phÃ¢n tÃ­ch vÃ o hÃ ng Ä‘á»£i, tráº£ HTTP 202 + jobId. */
   submitAnalysisJob: (request: AnalysisJobRequestDto) =>
     readJson<AnalysisJobResponseDto>("/api/v1/jobs/analysis", {
       method: "POST",
@@ -210,30 +210,30 @@ export const api = {
       body: JSON.stringify(request),
     }),
 
-  /** GET /api/v1/jobs/analysis/{jobId} — trạng thái + kết quả (nếu xong). */
+  /** GET /api/v1/jobs/analysis/{jobId} â€” tráº¡ng thÃ¡i + káº¿t quáº£ (náº¿u xong). */
   getAnalysisJob: (jobId: string) =>
     readJson<AnalysisJobResponseDto>(`/api/v1/jobs/analysis/${encodeURIComponent(jobId)}`),
 
-  /** GET /api/v1/jobs/analysis?limit= — danh sách job mới nhất. */
+  /** GET /api/v1/jobs/analysis?limit= â€” danh sÃ¡ch job má»›i nháº¥t. */
   listAnalysisJobs: (limit = 20) =>
     readJson<AnalysisJobResponseDto[]>(`/api/v1/jobs/analysis?limit=${limit}`),
 };
 
-/** Lấy lại nội dung code thật của một snippet từ backend. */
+/** Láº¥y láº¡i ná»™i dung code tháº­t cá»§a má»™t snippet tá»« backend. */
 
 /**
- * Cache TTL cho nội dung snippet ở phía FE.
+ * Cache TTL cho ná»™i dung snippet á»Ÿ phÃ­a FE.
  *
- * <p>Mỗi lần mở một file, trước đây FE gọi lại highlight để lấy text, tốn một
- * request dù nội dung snippet không đổi. Cache ngắn hạn này loại bỏ các request
- * lặp lại đó (mở lại cùng file nhiều lần) mà không ảnh hưởng dữ liệu mới: sau
- * TTL, lần mở kế tiếp sẽ tải lại từ backend.</p>
+ * <p>Má»—i láº§n má»Ÿ má»™t file, trÆ°á»›c Ä‘Ã¢y FE gá»i láº¡i highlight Ä‘á»ƒ láº¥y text, tá»‘n má»™t
+ * request dÃ¹ ná»™i dung snippet khÃ´ng Ä‘á»•i. Cache ngáº¯n háº¡n nÃ y loáº¡i bá» cÃ¡c request
+ * láº·p láº¡i Ä‘Ã³ (má»Ÿ láº¡i cÃ¹ng file nhiá»u láº§n) mÃ  khÃ´ng áº£nh hÆ°á»Ÿng dá»¯ liá»‡u má»›i: sau
+ * TTL, láº§n má»Ÿ káº¿ tiáº¿p sáº½ táº£i láº¡i tá»« backend.</p>
  */
 const SNIPPET_TEXT_TTL_MS = 5 * 60 * 1000;
 const SNIPPET_TEXT_MAX_ENTRIES = 300;
 const snippetTextCache = new Map<string, { value: string | null; expiresAt: number }>();
 
-/** Text thật của một snippet: ghép từ highlight (threshold=0 → mọi dòng). */
+/** Text tháº­t cá»§a má»™t snippet: ghÃ©p tá»« highlight (threshold=0 â†’ má»i dÃ²ng). */
 export async function fetchSnippetText(codeId: number | string): Promise<string | null> {
   const key = String(codeId);
   const cached = snippetTextCache.get(key);
@@ -272,10 +272,10 @@ async function loadSnippetText(codeId: number | string): Promise<string | null> 
 }
 
 // ---------------------------------------------------------------------------
-// Realtime: nghe trạng thái job qua SSE (không polling khi kết nối còn sống).
+// Realtime: nghe tráº¡ng thÃ¡i job qua SSE (khÃ´ng polling khi káº¿t ná»‘i cÃ²n sá»‘ng).
 // ---------------------------------------------------------------------------
 
-/** Mở kết nối SSE tới backend cho một job; trả về hàm huỷ. */
+/** Má»Ÿ káº¿t ná»‘i SSE tá»›i backend cho má»™t job; tráº£ vá» hÃ m huá»·. */
 export function subscribeAnalysisJobEvents(
   jobId: string,
   handlers: {
@@ -284,29 +284,74 @@ export function subscribeAnalysisJobEvents(
     onError?: (error: unknown) => void;
   } = {},
 ): () => void {
-  const source = new EventSource(`/api/v1/jobs/analysis/${encodeURIComponent(jobId)}/events`);
-  const listener = (event: MessageEvent) => {
-    try {
-      const job = JSON.parse(event.data) as AnalysisJobResponseDto;
-      handlers.onEvent?.(job);
-      if (job.terminal) {
-        source.close();
-        handlers.onTerminal?.(job);
-      }
-    } catch (error) {
-      handlers.onError?.(error);
+  // Reconnect/backoff: EventSource tu dong mo lai, nhung ta van chu dong
+  // backoff de tranh "bao hoa" request khi backend tam thoi loi.
+  let source: EventSource | null = null;
+  let reconnectTimer: number | null = null;
+  let reconnectDelayMs = 1000;
+  let terminalReceived = false;
+  let closedByCaller = false;
+
+  const clearReconnect = () => {
+    if (reconnectTimer !== null) {
+      window.clearTimeout(reconnectTimer);
+      reconnectTimer = null;
     }
   };
-  source.addEventListener("job", listener as EventListener);
-  source.onerror = (error) => {
-    handlers.onError?.(error);
+
+  const connect = () => {
+    if (closedByCaller || terminalReceived) return;
+    clearReconnect();
+    source = new EventSource(`/api/v1/jobs/analysis/${encodeURIComponent(jobId)}/events`);
+
+    const listener = (event: MessageEvent) => {
+      try {
+        const job = JSON.parse(event.data) as AnalysisJobResponseDto;
+        handlers.onEvent?.(job);
+        if (job.terminal) {
+          terminalReceived = true;
+          source?.close();
+          source = null;
+          handlers.onTerminal?.(job);
+        }
+      } catch (error) {
+        handlers.onError?.(error);
+      }
+    };
+    source.addEventListener("job", listener as EventListener);
+
+    source.onopen = () => {
+      // Ket noi thanh cong: reset backoff.
+      reconnectDelayMs = 1000;
+    };
+
+    source.onerror = (error) => {
+      handlers.onError?.(error);
+      source?.close();
+      source = null;
+      if (closedByCaller || terminalReceived || reconnectTimer !== null) return;
+      const delay = reconnectDelayMs;
+      reconnectDelayMs = Math.min(reconnectDelayMs * 2, 10000);
+      reconnectTimer = window.setTimeout(() => {
+        reconnectTimer = null;
+        connect();
+      }, delay);
+    };
   };
-  return () => source.close();
+
+  connect();
+
+  return () => {
+    closedByCaller = true;
+    clearReconnect();
+    source?.close();
+    source = null;
+  };
 }
 
 /**
- * Chờ job kết thúc bằng SSE; nếu SSE lỗi thì fallback polling nhẹ (2s/lần)
- * để không làm mất dữ liệu. Reject khi job FAILED.
+ * Chá» job káº¿t thÃºc báº±ng SSE; náº¿u SSE lá»—i thÃ¬ fallback polling nháº¹ (2s/láº§n)
+ * Ä‘á»ƒ khÃ´ng lÃ m máº¥t dá»¯ liá»‡u. Reject khi job FAILED.
  */
 export function waitForAnalysisJob(
   jobId: string,
@@ -316,12 +361,13 @@ export function waitForAnalysisJob(
     let settled = false;
     let source: EventSource | null = null;
     let pollTimer: number | null = null;
+    let pollDelayMs = 2000;
 
     const finish = (job: AnalysisJobResponseDto) => {
       if (settled) return;
       settled = true;
       source?.close();
-      if (pollTimer !== null) window.clearInterval(pollTimer);
+      if (pollTimer !== null) window.clearTimeout(pollTimer);
       if (job.status === "FAILED") {
         reject(new Error(job.errorMessage || `Analysis job ${jobId} failed`));
       } else {
@@ -336,23 +382,34 @@ export function waitForAnalysisJob(
         onEvent?.(job);
         if (job.terminal) finish(job);
       } catch {
-        // Bỏ qua lỗi parse tạm thời.
+        // Bá» qua lá»—i parse táº¡m thá»i.
       }
     }) as EventListener);
 
-    source.onerror = () => {
-      if (pollTimer !== null || settled) return;
-      pollTimer = window.setInterval(() => {
+    const schedulePoll = () => {
+      if (settled) return;
+      pollTimer = window.setTimeout(() => {
+        pollTimer = null;
         void (async () => {
           try {
             const job = await api.getAnalysisJob(jobId);
             onEvent?.(job);
-            if (job.terminal) finish(job);
+            if (job.terminal) {
+              finish(job);
+              return;
+            }
           } catch {
-            // Thử lại ở chu kỳ sau.
+            // retry later
           }
+          pollDelayMs = Math.min(pollDelayMs * 2, 10000);
+          schedulePoll();
         })();
-      }, 2000);
+      }, pollDelayMs);
+    };
+
+    source.onerror = () => {
+      if (pollTimer !== null || settled) return;
+      schedulePoll();
     };
   });
 }
