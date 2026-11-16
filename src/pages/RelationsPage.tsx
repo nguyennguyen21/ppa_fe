@@ -127,8 +127,8 @@ function buildClusters(nodes: Node[], pairs: PairRelation[]) {
 }
 
 // ---------------------------------------------------------------------------
-// Layout cố định: cụm chính ở giữa, các cụm nhỏ vòng quanh, bài lẻ loi nằm
-// thành một hàng mờ ở đáy.
+// Layout đám mây: mọi bài trải đều khung vẽ thành các chấm tròn, khoảng cách
+// đủ thở, nhãn chỉ hiện khi hover/chọn để biểu đồ luôn sạch và dễ đọc.
 // ---------------------------------------------------------------------------
 
 interface Placed {
@@ -139,18 +139,25 @@ interface Placed {
   r: number;
 }
 
-/** Khoảng cách tối thiểu giữa hai node để nhãn chữ không chồng lên nhau. */
-const MIN_NODE_DISTANCE = 108;
+/** Bán kính chấm (đơn vị viewBox) và khoảng cách tối thiểu giữa hai chấm. */
+const NODE_RADIUS = 11;
+const MIN_NODE_DISTANCE = 48;
+
+/** Nhiễu giả ngẫu nhiên ổn định theo chỉ số — đám điểm trông tự nhiên, không xếp hàng. */
+function seededNoise(i: number, salt: number) {
+  const v = Math.sin((i + 1) * 12.9898 + salt * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+}
 
 /**
- * Đẩy nhẹ các node đang chồng/sát nhau ra xa (relaxation) để nhãn và nút
+ * Đẩy nhẹ các chấm đang chồng/sát nhau ra xa (relaxation) để đám điểm
  * luôn có khoảng thở, kể cả khi mạng dày hoặc chỉ có một cụm lớn.
  */
-function relaxLayout(placed: Map<string, Placed>) {
+function relaxLayout(placed: Map<string, Placed>, minDistance = MIN_NODE_DISTANCE) {
   const ids = [...placed.keys()];
-  const padX = 64;
-  const padY = 48;
-  for (let iter = 0; iter < 90; iter++) {
+  const padX = 46;
+  const padY = 40;
+  for (let iter = 0; iter < 60; iter++) {
     let moved = false;
     for (let i = 0; i < ids.length; i++) {
       for (let j = i + 1; j < ids.length; j++) {
@@ -166,8 +173,8 @@ function relaxLayout(placed: Map<string, Placed>) {
           dy = (j % 2 === 0 ? 1 : -1) * 0.5;
           dist = Math.hypot(dx, dy);
         }
-        if (dist < MIN_NODE_DISTANCE) {
-          const push = (MIN_NODE_DISTANCE - dist) / 2;
+        if (dist < minDistance) {
+          const push = (minDistance - dist) / 2;
           const ux = dx / dist;
           const uy = dy / dist;
           a.x -= ux * push;
@@ -192,68 +199,53 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
   const clusters = buildClusters(nodes, pairs);
   const placed = new Map<string, Placed>();
 
-  // Xếp tâm các cụm trên một lưới đều để cụm không dồn vào một chỗ,
-  // luôn nằm gọn trong khung vẽ và có khoảng cách với nhau.
-  const gridCols = Math.max(1, Math.ceil(Math.sqrt(Math.max(clusters.length, 1))));
-  const gridRows = Math.max(1, Math.ceil(clusters.length / gridCols));
-  const cellW = (W - 2 * 100) / gridCols;
-  const cellH = (H - 2 * 90) / gridRows;
-  const centers = clusters.map((_, ci) => ({
-    x: 100 + (ci % gridCols + 0.5) * cellW,
-    y: 90 + (Math.floor(ci / gridCols) + 0.5) * cellH,
-  }));
-
-  const degree = new Map<string, number>();
-  for (const p of pairs) {
-    degree.set(p.aId, (degree.get(p.aId) ?? 0) + 1);
-    degree.set(p.bId, (degree.get(p.bId) ?? 0) + 1);
+  // Xếp các bài thành một "đám mây" điểm trải đều toàn khung vẽ: mỗi bài một ô
+  // lưới cộng nhiễu nhỏ, bài cùng cụm nằm cạnh nhau để vẫn thấy được quan hệ.
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const ordered: string[] = [];
+  const seen = new Set<string>();
+  for (const { ids } of clusters) {
+    for (const id of ids) {
+      if (!seen.has(id) && byId.has(id)) {
+        seen.add(id);
+        ordered.push(id);
+      }
+    }
+  }
+  for (const n of nodes) {
+    if (!seen.has(n.id)) {
+      seen.add(n.id);
+      ordered.push(n.id);
+    }
   }
 
-  // Bán kính vòng tròn cụm đủ lớn để hai node cạnh nhau cách >= MIN_NODE_DISTANCE.
-  const ringRadius = (count: number) =>
-    Math.min(
-      Math.max(64, ((count - 1) * MIN_NODE_DISTANCE) / (Math.PI * 2)),
-      Math.max(W, H) / 2 - 80,
-    );
+  const padX = 52;
+  const padY = 46;
+  const count = Math.max(ordered.length, 1);
+  const usableW = W - padX * 2;
+  const usableH = H - padY * 2;
+  const cols = Math.max(1, Math.ceil(Math.sqrt(count * (usableW / usableH))));
+  const rows = Math.max(1, Math.ceil(count / cols));
+  const cellW = usableW / cols;
+  const cellH = usableH / rows;
 
-  clusters.forEach(({ ids }, ci) => {
-    const c = centers[ci];
-    const n = ids.length;
-    if (n === 1) {
-      placed.set(ids[0], { x: c.x, y: c.y, vx: 0, vy: 0, r: 12 });
-      return;
-    }
-    const radius = ringRadius(n);
-    ids.forEach((id, i) => {
-      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-      placed.set(id, {
-        x: c.x + radius * Math.cos(angle),
-        y: c.y + radius * Math.sin(angle),
-        vx: 0,
-        vy: 0,
-        r: 10,
-      });
-    });
-    const hub = ids.reduce(
-      (b, id) => ((degree.get(id) ?? 0) > (degree.get(b) ?? 0) ? id : b),
-      ids[0],
-    );
-    placed.set(hub, { x: c.x, y: c.y, vx: 0, vy: 0, r: 13 });
-  });
-
-  const orphaned = nodes.filter((n) => !placed.has(n.id));
-  const cols = Math.min(8, Math.max(1, orphaned.length));
-  orphaned.forEach((n, i) => {
-    placed.set(n.id, {
-      x: 90 + (i % cols) * (MIN_NODE_DISTANCE + 6),
-      y: H - 46 - Math.floor(i / cols) * 34,
+  ordered.forEach((id, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    // Hàng lẻ so le nửa ô + nhiễu rộng để đám điểm không xếp thành hàng cứng.
+    const stagger = row % 2 === 1 ? cellW * 0.5 : 0;
+    const jx = (seededNoise(i, 1) - 0.5) * cellW * 0.82;
+    const jy = (seededNoise(i, 2) - 0.5) * cellH * 0.82;
+    placed.set(id, {
+      x: clamp(padX + ((col + 0.5) * cellW + stagger) % usableW + jx, padX, W - padX),
+      y: clamp(padY + (row + 0.5) * cellH + jy, padY, H - padY),
       vx: 0,
       vy: 0,
-      r: 8,
+      r: NODE_RADIUS,
     });
   });
 
-  relaxLayout(placed);
+  relaxLayout(placed, Math.max(NODE_RADIUS * 2 + 8, Math.min(MIN_NODE_DISTANCE, Math.min(cellW, cellH) * 1.05)));
 
   return { clusters, placed };
 }
@@ -299,7 +291,7 @@ export default function RelationsPage() {
   // Nguồn dữ liệu THẬT từ backend (UI giữ nguyên 100%).
   const { submissions: mockSubmissions, pairs: pairRelations } = useBackendData();
   const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD);
-  const [showSingletons, setShowSingletons] = useState(false);
+  const [showSingletons, setShowSingletons] = useState(true);
   const [active, setActive] = useState<string | null>(null);
   const [focusedNode, setFocusedNode] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
@@ -464,10 +456,9 @@ export default function RelationsPage() {
     setView(fitTransform(points));
   };
 
-  // Ẩn nhãn khi mạng quá dày để tránh chồng chữ (threshold thấp / nhiều node).
-  const dense = visibleNodes.length > 8 || threshold <= 55;
+  // Nhãn chỉ hiện cho bài đang chọn/hover và các bài liên hệ để đám điểm sạch, không chồng chữ.
   const shouldShowLabel = (id: string) =>
-    !dense || id === active || partnerIds.has(id) || id === focusedNode;
+    id === active || partnerIds.has(id) || id === focusedNode;
 
   const exportSvg = () => {
     const svg = svgRef.current;
@@ -697,12 +688,6 @@ export default function RelationsPage() {
               Tab tiếp tới từng chấm để chọn bằng Enter. Giữ Shift + mũi tên để di chuyển xa hơn.
             </div>
           )}
-          {dense && (
-            <div className="mb-3 border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800" style={{ borderRadius: 10 }} role="note">
-              Đang ẩn nhãn nền để tránh chồng chữ (nhiều điểm). Nhấn vào một chấm hoặc dùng dạng Bảng để xem đầy đủ tên bài.
-            </div>
-          )}
-
           {searchHits.length > 0 && (
             <div className="mb-3 flex flex-wrap gap-1.5">
               {searchHits.map((s) => (
@@ -764,21 +749,23 @@ export default function RelationsPage() {
                         y1={a.y}
                         x2={b.x}
                         y2={b.y}
-                        stroke={focused ? "currentColor" : "#a3a3a3"}
-                        className={focused ? "text-stone-900" : ""}
-                        strokeWidth={focused ? 2 : 1.2}
+                        stroke={focused ? "currentColor" : "#cfcac4"}
+                        className={focused ? "text-stone-800" : ""}
+                        strokeWidth={focused ? 1.8 : 1}
                       />
-                      <text
-                        x={midX}
-                        y={midY - 5}
-                        textAnchor="middle"
-                        fontSize="11"
-                        fill="#44403c"
-                        fontWeight={focused ? 700 : 600}
-                        style={{ pointerEvents: "none", paintOrder: "stroke", stroke: "#ffffff", strokeWidth: 3 }}
-                      >
-                        {e.similarity}%
-                      </text>
+                      {focused && (
+                        <text
+                          x={midX}
+                          y={midY - 6}
+                          textAnchor="middle"
+                          fontSize="11"
+                          fill="#44403c"
+                          fontWeight={700}
+                          style={{ pointerEvents: "none", paintOrder: "stroke", stroke: "#ffffff", strokeWidth: 3 }}
+                        >
+                          {e.similarity}%
+                        </text>
+                      )}
                     </g>
                   );
                 })}
