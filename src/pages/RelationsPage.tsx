@@ -60,6 +60,12 @@ const toneSoft: Record<Tone, string> = {
   plagiarism: "var(--node-plagiarism-soft)",
 };
 
+/** Rút gọn tên file hiển thị dưới node để nhãn không kéo dài, đè lên nhãn khác. */
+const shortLabel = (fileName: string) => {
+  const base = fileName.replace(/\.\w+$/, "");
+  return base.length > 20 ? `${base.slice(0, 19)}…` : base;
+};
+
 function buildNodes(submissions: Submission[], pairs: PairRelation[]): Node[] {
   const best = new Map<string, number>();
   const degree = new Map<string, number>();
@@ -133,16 +139,69 @@ interface Placed {
   r: number;
 }
 
+/** Khoảng cách tối thiểu giữa hai node để nhãn chữ không chồng lên nhau. */
+const MIN_NODE_DISTANCE = 108;
+
+/**
+ * Đẩy nhẹ các node đang chồng/sát nhau ra xa (relaxation) để nhãn và nút
+ * luôn có khoảng thở, kể cả khi mạng dày hoặc chỉ có một cụm lớn.
+ */
+function relaxLayout(placed: Map<string, Placed>) {
+  const ids = [...placed.keys()];
+  const padX = 64;
+  const padY = 48;
+  for (let iter = 0; iter < 90; iter++) {
+    let moved = false;
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const a = placed.get(ids[i]);
+        const b = placed.get(ids[j]);
+        if (!a || !b) continue;
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let dist = Math.hypot(dx, dy);
+        if (dist < 0.001) {
+          // Trùng hoàn toàn: tách theo một hướng ngẫu nhiên nhỏ.
+          dx = (i % 2 === 0 ? 1 : -1) * 0.5;
+          dy = (j % 2 === 0 ? 1 : -1) * 0.5;
+          dist = Math.hypot(dx, dy);
+        }
+        if (dist < MIN_NODE_DISTANCE) {
+          const push = (MIN_NODE_DISTANCE - dist) / 2;
+          const ux = dx / dist;
+          const uy = dy / dist;
+          a.x -= ux * push;
+          a.y -= uy * push;
+          b.x += ux * push;
+          b.y += uy * push;
+          moved = true;
+        }
+      }
+    }
+    for (const id of ids) {
+      const p = placed.get(id);
+      if (!p) continue;
+      p.x = clamp(p.x, padX, W - padX);
+      p.y = clamp(p.y, padY, H - padY);
+    }
+    if (!moved) break;
+  }
+}
+
 function seedLayout(nodes: Node[], pairs: PairRelation[]) {
   const clusters = buildClusters(nodes, pairs);
   const placed = new Map<string, Placed>();
 
-  const centers = clusters.map((_, ci) => {
-    const n = clusters.length;
-    const angle = (ci / Math.max(n, 1)) * Math.PI * 2 - Math.PI / 2;
-    const dist = n <= 1 ? 0 : 210;
-    return { x: W / 2 + dist * Math.cos(angle), y: H / 2 - 30 + dist * Math.sin(angle) };
-  });
+  // Xếp tâm các cụm trên một lưới đều để cụm không dồn vào một chỗ,
+  // luôn nằm gọn trong khung vẽ và có khoảng cách với nhau.
+  const gridCols = Math.max(1, Math.ceil(Math.sqrt(Math.max(clusters.length, 1))));
+  const gridRows = Math.max(1, Math.ceil(clusters.length / gridCols));
+  const cellW = (W - 2 * 100) / gridCols;
+  const cellH = (H - 2 * 90) / gridRows;
+  const centers = clusters.map((_, ci) => ({
+    x: 100 + (ci % gridCols + 0.5) * cellW,
+    y: 90 + (Math.floor(ci / gridCols) + 0.5) * cellH,
+  }));
 
   const degree = new Map<string, number>();
   for (const p of pairs) {
@@ -150,18 +209,26 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
     degree.set(p.bId, (degree.get(p.bId) ?? 0) + 1);
   }
 
+  // Bán kính vòng tròn cụm đủ lớn để hai node cạnh nhau cách >= MIN_NODE_DISTANCE.
+  const ringRadius = (count: number) =>
+    Math.min(
+      Math.max(64, ((count - 1) * MIN_NODE_DISTANCE) / (Math.PI * 2)),
+      Math.max(W, H) / 2 - 80,
+    );
+
   clusters.forEach(({ ids }, ci) => {
     const c = centers[ci];
+    const n = ids.length;
+    if (n === 1) {
+      placed.set(ids[0], { x: c.x, y: c.y, vx: 0, vy: 0, r: 12 });
+      return;
+    }
+    const radius = ringRadius(n);
     ids.forEach((id, i) => {
-      if (ids.length === 1) {
-        placed.set(id, { x: c.x, y: c.y, vx: 0, vy: 0, r: 12 });
-        return;
-      }
-      const angle = (i / ids.length) * Math.PI * 2 - Math.PI / 2;
-      const orbit = ids.length <= 3 ? 46 : ids.length <= 5 ? 60 : 76;
+      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
       placed.set(id, {
-        x: c.x + orbit * Math.cos(angle),
-        y: c.y + orbit * Math.sin(angle),
+        x: c.x + radius * Math.cos(angle),
+        y: c.y + radius * Math.sin(angle),
         vx: 0,
         vy: 0,
         r: 10,
@@ -175,9 +242,18 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
   });
 
   const orphaned = nodes.filter((n) => !placed.has(n.id));
+  const cols = Math.min(8, Math.max(1, orphaned.length));
   orphaned.forEach((n, i) => {
-    placed.set(n.id, { x: 100 + (i % 12) * 64, y: H - 56 - Math.floor(i / 12) * 22, vx: 0, vy: 0, r: 8 });
+    placed.set(n.id, {
+      x: 90 + (i % cols) * (MIN_NODE_DISTANCE + 6),
+      y: H - 46 - Math.floor(i / cols) * 34,
+      vx: 0,
+      vy: 0,
+      r: 8,
+    });
   });
+
+  relaxLayout(placed);
 
   return { clusters, placed };
 }
@@ -762,7 +838,7 @@ export default function RelationsPage() {
                           className="text-stone-900"
                           style={{ pointerEvents: "none", paintOrder: "stroke", stroke: "#ffffff", strokeWidth: 3 }}
                         >
-                          {n.fileName.replace(/\.\w+$/, "")}
+                          {shortLabel(n.fileName)}
                         </text>
                       )}
                     </g>
