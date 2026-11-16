@@ -80,7 +80,7 @@ const InfoCard: React.FC<InfoCardProps> = ({
   return (
     <div
       onClick={onCardClick}
-      className={`${cardBgColor} ${sizeClasses[size]} rounded-lg border border-stone-200 shadow-sm flex items-start gap-4 ${
+      className={`${cardBgColor} ${sizeClasses[size]} rounded-xl border border-stone-200 shadow-sm flex items-start gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-stone-300 ${
         onCardClick ? "transition-transform hover:scale-[1.02] cursor-pointer" : ""
       }`}
     >
@@ -111,7 +111,7 @@ const InfoCard: React.FC<InfoCardProps> = ({
         )}
 
         {/* Value */}
-        <p className={`${valueSizeClasses[size]} font-bold ${valueColor}`}>
+        <p className={`${valueSizeClasses[size]} font-bold tabular-nums tracking-tight ${valueColor}`}>
           {value}
           {valueSuffix && (
             <span className="text-lg font-medium ml-1">{valueSuffix}</span>

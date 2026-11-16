@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaArrowRight, FaChartSimple, FaClock, FaCodeCompare, FaDownload, FaFileLines, FaRobot, FaTable, FaUpload } from "react-icons/fa6";
+import { FaArrowRight, FaChartSimple, FaClock, FaCodeCompare, FaDownload, FaFileLines, FaRobot, FaTable, FaTriangleExclamation, FaUpload, FaUsers } from "react-icons/fa6";
 import type { Submission } from "../data/types";
 import { sampleLibrary, type LibrarySample } from "../data/aiSampleLibrary";
 import { useBackendData, languageFromFileName } from "../shared/hook/backend-data-context";
@@ -860,10 +860,10 @@ export default function Dashboard() {
       ) : (
         <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <InfoCard title="Tổng bài nộp" value={mockSubmissions.length} valueSuffix="bài" showLink={false} />
-        <InfoCard title="Cần xem lại" value={plag} valueSuffix="bài" valueColor="text-red-700" showLink={false} />
-        <InfoCard title="Tương đồng cao nhất" value={highest} valueSuffix="%" showLink={false} />
-        <InfoCard title="Sinh viên" value={studentCount} valueSuffix="người" showLink={false} />
+        <InfoCard title="Tổng bài nộp" value={mockSubmissions.length} valueSuffix="bài" icon={<FaFileLines size={20} />} iconBgColor="bg-stone-100" iconColor="text-stone-700" showLink={false} />
+        <InfoCard title="Cần xem lại" value={plag} valueSuffix="bài" valueColor="text-red-700" icon={<FaTriangleExclamation size={20} />} iconBgColor="bg-red-50" iconColor="text-red-700" showLink={false} />
+        <InfoCard title="Tương đồng cao nhất" value={highest} valueSuffix="%" icon={<FaChartSimple size={20} />} iconBgColor="bg-amber-50" iconColor="text-amber-700" showLink={false} />
+        <InfoCard title="Sinh viên" value={studentCount} valueSuffix="người" icon={<FaUsers size={20} />} iconBgColor="bg-emerald-50" iconColor="text-emerald-700" showLink={false} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
