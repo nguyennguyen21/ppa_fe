@@ -16,8 +16,6 @@ import {
   FaWandMagicSparkles,
   FaXmark,
 } from "react-icons/fa6";
-import { samples, type SampleKind } from "../data/aiSamples";
-import { findLibrarySample, samplesOfKind, type LibrarySample } from "../data/aiSampleLibrary";
 import CodeEditor from "../features/plagiarism/components/CodeEditor";
 import { InfoTip } from "../shared/Components/UI/feedback/Tooltip";
 import { useBackendData } from "../shared/hook/backend-data-context";
@@ -102,37 +100,16 @@ const toneMeta = {
   },
 } as const;
 
-const kindFromParam = (value: string | null): SampleKind | "custom" => {
-  if (value === "ai" || value === "human" || value === "mixed") return value;
-  return "custom";
-};
-
-const resolveSampleParam = (value: string | null): LibrarySample | null => {
-  if (!value) return null;
-  const direct = findLibrarySample(value);
-  if (direct) return direct;
-  if (value === "ai" || value === "human" || value === "mixed") {
-    return samplesOfKind(value)[0] ?? null;
-  }
-  return null;
-};
-
 export default function DetectPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const mauParam = searchParams.get("mau");
-  const initialKind = kindFromParam(mauParam);
-  const initialEntry = resolveSampleParam(mauParam);
 
   const { getSnippetCode } = useBackendData();
   const [beHighlight, setBeHighlight] = useState<AiHighlightResponseDto | null>(null);
   const beId = mauParam && mauParam.startsWith("be:") ? mauParam.slice(3) : null;
 
-  const [code, setCode] = useState(initialEntry?.code ?? "");
-  const [sample, setSample] = useState<SampleKind | "custom">(
-    initialEntry?.kind ?? initialKind,
-  );
-  const [sampleId, setSampleId] = useState<string | null>(initialEntry?.id ?? null);
-  const [editing, setEditing] = useState(!initialEntry);
+  const [code, setCode] = useState("");
+  const [editing, setEditing] = useState(true);
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const [openGroups, setOpenGroups] = useState<Set<string>>(
     () => new Set(METRIC_GROUPS.slice(0, 2).map((group) => group.id)),
@@ -149,8 +126,6 @@ export default function DetectPage() {
     void getSnippetCode(beId).then((text) => {
       if (!alive || text == null) return;
       setCode(text);
-      setSample("custom");
-      setSampleId(null);
       setSelectedLine(null);
       setEditing(false);
       setSearchParams({ mau: "custom" }, { replace: true });
@@ -229,27 +204,13 @@ export default function DetectPage() {
   const aiLineCount = insights.filter((item) => item.tone === "ai").length;
   const humanLineCount = insights.filter((item) => item.tone === "human").length;
   const lineTones = useMemo(() => insights.map((item) => item.tone), [insights]);
-  const activeSample = sampleId ? findLibrarySample(sampleId) : null;
   const currentInsight =
     selectedLine !== null ? insights[selectedLine - 1] ?? null : null;
-
-  const loadSample = (kind: SampleKind) => {
-    const entry = samplesOfKind(kind)[0];
-    if (!entry) return;
-    setSample(kind);
-    setSampleId(entry.id);
-    setCode(entry.code);
-    setSelectedLine(null);
-    setEditing(false);
-    setSearchParams({ mau: entry.id }, { replace: true });
-  };
 
   const loadFile = async (file?: File) => {
     if (!file) return;
     const text = await file.text();
     setCode(text);
-    setSample("custom");
-    setSampleId(null);
     setSelectedLine(null);
     setEditing(false);
     setSearchParams({ mau: "custom" }, { replace: true });
@@ -283,8 +244,6 @@ export default function DetectPage() {
     });
     if (!ok) return;
     setCode("");
-    setSample("custom");
-    setSampleId(null);
     setSelectedLine(null);
     setEditing(true);
     setSearchParams({ mau: "custom" }, { replace: true });
@@ -301,28 +260,8 @@ export default function DetectPage() {
         <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600">
           {languageLabel[analysis.language]}
         </span>
-        {activeSample && (
-          <span className="font-mono text-xs text-stone-500">{activeSample.fileName}</span>
-        )}
       </div>
       <div className="flex flex-wrap items-center gap-1">
-        {samples.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            title={s.hint}
-            onClick={() => loadSample(s.id)}
-            data-guide="detect-sample"
-            className={`rounded px-2 py-1 text-xs font-semibold transition-colors ${
-              sample === s.id
-                ? "bg-stone-900 text-white"
-                : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
-        <span className="mx-1 h-4 w-px bg-stone-200" />
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
@@ -360,10 +299,10 @@ export default function DetectPage() {
             Mô hình cụm
           </Link>
           <Link
-            to={sample === "custom" ? "/ai-detect/kho-mau" : `/ai-detect/kho-mau?loai=${sample}`}
+            to="/ai-detect/kho-mau"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
           >
-            <FaArrowLeft className="text-xs" /> Kho mẫu
+            <FaArrowLeft className="text-xs" /> Kho kết quả
           </Link>
         </div>
         </div>
@@ -390,8 +329,6 @@ export default function DetectPage() {
                 value={code}
                 onChange={(next) => {
                   setCode(next);
-                  setSample("custom");
-                  setSampleId(null);
                   setSelectedLine(null);
                 }}
                 language={analysis.language}
@@ -464,16 +401,9 @@ export default function DetectPage() {
               <FaCircleInfo className="text-stone-300" size={22} />
               <p className="font-serif text-lg font-semibold text-stone-900">Chưa có mã nguồn</p>
               <p className="max-w-sm text-xs leading-relaxed text-stone-600">
-                Nạp một tệp từ máy hoặc dùng một trong các mẫu của hệ thống để bắt đầu phân tích.
+                Nạp một tệp từ máy hoặc dán mã nguồn vào trình soạn thảo để bắt đầu phân tích.
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => loadSample("ai")}
-                  className="rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800"
-                >
-                  Dùng mẫu AI
-                </button>
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}

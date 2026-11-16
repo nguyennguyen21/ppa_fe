@@ -8,11 +8,7 @@ import {
   FaUser,
   FaWandMagicSparkles,
 } from "react-icons/fa6";
-import {
-  sampleLibrary,
-  type LibrarySample,
-} from "../data/aiSampleLibrary";
-import type { SampleKind } from "../data/aiSamples";
+import type { LibrarySample, SampleKind } from "../data/aiSampleTypes";
 import { useBackendData } from "../shared/hook/backend-data-context";
 import {
   analyzeCode,
@@ -200,7 +196,7 @@ export default function AiSampleLibraryPage() {
     [aiResults],
   );
 
-  const samples: LibrarySample[] = aiResults.length > 0 ? beSamples : sampleLibrary;
+  const samples: LibrarySample[] = beSamples;
 
   useEffect(() => {
     let cancelled = false;
@@ -252,7 +248,7 @@ export default function AiSampleLibraryPage() {
         ? "Các bài nghiêng về người viết"
         : activeFilter === "mixed"
           ? "Các bài hỗn hợp"
-          : "Toàn bộ kho mã nguồn";
+          : "Toàn bộ kết quả phân tích";
 
   return (
     <div className="space-y-8">
@@ -260,7 +256,7 @@ export default function AiSampleLibraryPage() {
       <div className="border-b border-stone-200/80 pb-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-            CODEX / Kho mẫu
+            CODEX / Kho kết quả
           </p>
           <div className="flex items-center gap-2">
             <Link
@@ -273,11 +269,11 @@ export default function AiSampleLibraryPage() {
           </div>
         </div>
         <h1 className="mt-2 flex items-center gap-2.5 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
-          <FaCode className="text-stone-500" /> Kho mã nguồn hệ thống
+          <FaCode className="text-stone-500" /> Kho kết quả phân tích
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
-          Chọn một tệp để mở trang phân tích. Mỗi tệp đều được chấm trước 34 chỉ số, và trong
-          trang phân tích bạn có thể nhấn từng dòng để đọc giải thích.
+          Các bài đã được backend phân loại AI / người viết. Chọn một tệp để mở trang phân tích,
+          nơi bạn có thể xem 34 chỉ số và nhấn từng dòng để đọc giải thích.
         </p>
       </div>
 
@@ -337,17 +333,20 @@ export default function AiSampleLibraryPage() {
       ) : (
         <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center shadow-sm">
           <FaMagnifyingGlass className="text-stone-300" size={20} />
-          <p className="text-sm font-medium text-stone-700">Không tìm thấy tệp phù hợp</p>
+          <p className="text-sm font-medium text-stone-700">
+            {counts.all === 0 ? "Chưa có kết quả phân tích" : "Không tìm thấy tệp phù hợp"}
+          </p>
           <p className="max-w-sm text-xs leading-relaxed text-stone-600">
-            Thử từ khóa khác hoặc chuyển sang nhóm khác. Kho mẫu hiện có {counts.all} tệp thuộc ba
-            nhóm AI, người viết và hỗn hợp.
+            {counts.all === 0
+              ? "Backend chưa trả về bài nào. Hãy phân tích mã nguồn trước, kết quả sẽ xuất hiện tại đây."
+              : "Thử từ khóa khác hoặc chuyển sang nhóm khác."}
           </p>
         </div>
       )}
 
       <p className="text-xs leading-relaxed text-stone-500">
-        Kho mẫu dùng để minh hoạ cách hệ thống chấm điểm, không phải dữ liệu bài nộp thật của sinh
-        viên. Mỗi tệp giữ nguyên nội dung gốc trong kho mã nguồn của hệ thống.
+        Kho kết quả chỉ hiển thị dữ liệu backend trả về cho tài khoản của bạn — không có bài mẫu
+        hay dữ liệu giả được chèn vào.
       </p>
     </div>
   );

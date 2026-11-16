@@ -51,10 +51,6 @@ const GUIDES: Record<string, GuideContent> = {
     title: "So sánh 2 bài đã chọn",
     body: "Nút này chỉ bật khi bạn đã chọn đủ 2 bài. Hệ thống sẽ mở trang so sánh và tự nạp đúng hai bài nộp.",
   },
-  "detect-sample": {
-    title: "Mẫu phân tích",
-    body: "Chọn nhanh một mẫu AI, người viết hoặc hỗn hợp để xem cách hệ thống chấm 34 chỉ số. Bạn vẫn có thể dán code của mình.",
-  },
   "detect-edit": {
     title: "Sửa mã nguồn",
     body: "Bật chế độ sửa để dùng editor có tô màu cú pháp, gấp code, tìm kiếm và ghép ngoặc. Kết quả phân loại cập nhật ngay khi gõ.",
@@ -142,7 +138,7 @@ const PAGE_NAMES: Record<string, string> = {
   "/results": "Kết quả quét",
   "/compare": "So sánh",
   "/relations": "Biểu đồ quan hệ",
-  "/ai-detect/kho-mau": "Kho mẫu",
+  "/ai-detect/kho-mau": "Kho kết quả",
   "/ai-detect/cum": "Mô hình cụm",
   "/ai-detect/analyze": "Phân tích mã nguồn",
   "/profile": "Hồ sơ",

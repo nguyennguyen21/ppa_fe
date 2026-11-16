@@ -1,10 +1,9 @@
-// Mô hình phân cụm các bài mẫu dựa trên 10 chỉ số tĩnh.
+// Mô hình phân cụm các bài đã phân tích dựa trên 10 chỉ số tĩnh.
 // Dùng k-means trên không gian đặc trưng chuẩn hoá, chiếu PCA xuống 2D để vẽ
 // biểu đồ phân tán; đồng thời xây mạng k láng giềng gần nhất để vẽ đồ thị.
 
 import { analyzeCode, type AnalysisResult } from "./aiClassify";
-import { sampleLibrary, type LibrarySample } from "../../../data/aiSampleLibrary";
-import type { SampleKind } from "../../../data/aiSamples";
+import type { LibrarySample, SampleKind } from "../../../data/aiSampleTypes";
 
 export interface FeatureDef {
   key: string;
@@ -381,7 +380,7 @@ export function kindColor(kind: SampleKind) {
   return KIND_COLOR[kind];
 }
 
-export function buildClusterModel(k: number, samples: LibrarySample[] = sampleLibrary): ClusterModel {
+export function buildClusterModel(k: number, samples: LibrarySample[]): ClusterModel {
   const normalizedK = Math.max(2, Math.min(4, k));
   const prepared = samples.map((sample) => {
     const { analysis, raw } = vectorFor(sample);

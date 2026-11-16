@@ -295,12 +295,12 @@ export default function ComparePage() {
   const [searchParams] = useSearchParams();
   const toast = useToast();
   // Nguồn dữ liệu THẬT từ backend (UI giữ nguyên 100%).
-  const { submissions: mockSubmissions, pairs: pairRelations, getSnippetCode } = useBackendData();
+  const { submissions: submissions, pairs: pairRelations, getSnippetCode } = useBackendData();
   const { colorBlind, setColorBlind } = usePrefs();
   const [mobileTab, setMobileTab] = useState<"A" | "B" | "both">("both");
   const list = useMemo(
-    () => [...mockSubmissions].sort((x, y) => y.similarity - x.similarity),
-    [mockSubmissions],
+    () => [...submissions].sort((x, y) => y.similarity - x.similarity),
+    [submissions],
   );
   const initial = useMemo(() => {
     const find = (value: string | null) => {
@@ -407,7 +407,7 @@ export default function ComparePage() {
   }
 
   if (view === "picker") {
-    const byId = new Map(mockSubmissions.map((s) => [s.id, s]));
+    const byId = new Map(submissions.map((s) => [s.id, s]));
     const aSel = a ?? list.at(0) ?? emptySubmission;
     const bSel = b ?? list.find((item) => item.id !== aSel.id) ?? list.at(1) ?? emptySubmission;
     const pairOptions = pairRelations

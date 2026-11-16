@@ -61,7 +61,7 @@ const initials = (name: string) =>
 export default function ProfilePage() {
   const toast = useToast();
   // Nguồn dữ liệu THẬT từ backend (UI giữ nguyên 100%).
-  const { submissions: mockSubmissions, activity: recentActivity } = useBackendData();
+  const { submissions: submissions, activity: recentActivity } = useBackendData();
   const confirm = useConfirm();
   const [form, setForm] = useState<ProfileData>(readProfile);
   const [historyQuery, setHistoryQuery] = useState("");
@@ -72,14 +72,14 @@ export default function ProfilePage() {
 
   const history = useMemo(() => {
     const q = historyQuery.trim().toLowerCase();
-    return mockSubmissions.filter(
+    return submissions.filter(
       (s) =>
         !q ||
         s.fileName.toLowerCase().includes(q) ||
         s.studentName.toLowerCase().includes(q) ||
         s.studentCode.toLowerCase().includes(q),
     );
-  }, [historyQuery, mockSubmissions]);
+  }, [historyQuery, submissions]);
 
   const saveProfile = () => {
     if (!form.displayName.trim()) {
@@ -294,7 +294,7 @@ export default function ProfilePage() {
                 <FaClockRotateLeft className="text-stone-500" size={13} /> Lịch sử quét
               </span>
             </CardTitle>
-            <Badge tone="ok">{mockSubmissions.length} bài</Badge>
+            <Badge tone="ok">{submissions.length} bài</Badge>
           </div>
 
           <div className="relative mt-4">

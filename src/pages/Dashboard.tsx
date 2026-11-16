@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaArrowRight, FaChartSimple, FaClock, FaCodeCompare, FaDownload, FaFileLines, FaRobot, FaTable, FaTriangleExclamation, FaUpload, FaUsers } from "react-icons/fa6";
 import type { Submission } from "../data/types";
-import { sampleLibrary, type LibrarySample } from "../data/aiSampleLibrary";
+import type { LibrarySample } from "../data/aiSampleTypes";
 import { useBackendData, languageFromFileName } from "../shared/hook/backend-data-context";
-import { analyzeCode, type Verdict } from "../features/plagiarism/utils/aiClassify";
+import { type Verdict } from "../features/plagiarism/utils/aiClassify";
 import { EmptyState } from "../shared/Components/UI/feedback/StatePanel";
 import InfoCard from "../shared/Components/UI/cart/InfoCard";
 import ClustersCard from "../shared/Components/UI/cart/ClustersCard";
@@ -147,23 +147,7 @@ function AiStatsSection() {
         signals: [],
       };
     });
-    if (aiResults.length > 0) {
-      return fromBackend;
-    }
-    return sampleLibrary.map((sample) => {
-      const analysis = analyzeCode(sample.code);
-      return {
-        sample,
-        aiProbability: analysis.aiProbability,
-        humanProbability: analysis.humanProbability,
-        verdict: analysis.verdict,
-        confidence: analysis.confidence,
-        language: analysis.language,
-        codeLineCount: analysis.codeLineCount,
-        functionCount: analysis.functionCount,
-        signals: analysis.signals,
-      };
-    });
+    return fromBackend;
   }, [aiResults]);
 
   const classOptions = useMemo(
@@ -292,7 +276,7 @@ function AiStatsSection() {
             to="/ai-detect/kho-mau"
             className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
           >
-            Mở kho mẫu AI <FaArrowRight className="text-xs" />
+            Mở kho kết quả AI <FaArrowRight className="text-xs" />
           </Link>
         </div>
       </div>
@@ -300,7 +284,7 @@ function AiStatsSection() {
       {/* Thẻ tóm tắt AI — tông đen/trắng trực quan */}
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 12 }}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Tổng tệp mẫu</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Tổng tệp</p>
           <p className="mt-1 font-serif text-2xl font-semibold text-stone-900">{summary.total} tệp</p>
           <p className="mt-1 text-xs text-stone-600">Trong kho {stats.length} tệp đang lọc</p>
         </div>
@@ -588,8 +572,8 @@ function AiStatsSection() {
       ) : (
         <div className="mt-5">
           <EmptyState
-            title="Không có tệp mẫu nào khớp bộ lọc"
-            description="Hãy giảm ngưỡng AI hoặc xoá bộ lọc để xem toàn bộ kho mẫu."
+            title="Không có tệp nào khớp bộ lọc"
+            description="Hãy giảm ngưỡng AI hoặc xoá bộ lọc để xem toàn bộ kho kết quả."
             action={
               <button
                 type="button"
@@ -616,22 +600,23 @@ export default function Dashboard() {
   const navigate = useNavigate();
   // Nguồn dữ liệu THẬT từ backend (UI giữ nguyên 100%).
   const {
-    submissions: mockSubmissions,
+    submissions,
     pairs: pairRelations,
     activity: recentActivity,
     clusters,
     studentCount,
+    aiResults,
   } = useBackendData();
   const [statsMode, setStatsMode] = useState<StatsMode>("plagiarism");
-  const plag = mockSubmissions.filter((s) => s.label === "plagiarism").length;
-  const suspicious = mockSubmissions.filter((s) => s.label === "suspicious").length;
-  const innocent = mockSubmissions.filter((s) => s.label === "innocent").length;
-  const highest = mockSubmissions.length > 0 ? Math.max(...mockSubmissions.map((s) => s.similarity)) : 0;
+  const plag = submissions.filter((s) => s.label === "plagiarism").length;
+  const suspicious = submissions.filter((s) => s.label === "suspicious").length;
+  const innocent = submissions.filter((s) => s.label === "innocent").length;
+  const highest = submissions.length > 0 ? Math.max(...submissions.map((s) => s.similarity)) : 0;
   const average =
-    mockSubmissions.length > 0
-      ? Math.round(mockSubmissions.reduce((a, s) => a + s.similarity, 0) / mockSubmissions.length)
+    submissions.length > 0
+      ? Math.round(submissions.reduce((a, s) => a + s.similarity, 0) / submissions.length)
       : 0;
-  const sorted = [...mockSubmissions].sort((a, b) => b.similarity - a.similarity);
+  const sorted = [...submissions].sort((a, b) => b.similarity - a.similarity);
 
   const handleExcel = async () => {
     await exportExcel(safeFileName("codex-bao-cao-tong-quan", "xlsx"), [
@@ -642,7 +627,7 @@ export default function Dashboard() {
           { header: "Giá trị", key: "v", width: 34 },
         ],
         rows: [
-          { k: "Tổng bài nộp", v: mockSubmissions.length },
+          { k: "Tổng bài nộp", v: submissions.length },
           { k: "Cần xem lại", v: plag },
           { k: "Nghi ngờ", v: suspicious },
           { k: "Không có dấu hiệu", v: innocent },
@@ -708,11 +693,11 @@ export default function Dashboard() {
       title: "Báo cáo tổng quan đợt quét đạo văn",
       subtitle: "Tổng hợp kết quả quét và các cặp bài có mức tương đồng cao.",
       meta: [
-        { label: "Phạm vi", value: `${mockSubmissions.length} bài nộp` },
+        { label: "Phạm vi", value: `${submissions.length} bài nộp` },
         { label: "Ngưỡng cảnh báo", value: "≥ 80% tương đồng" },
       ],
       summary: [
-        { label: "Tổng bài nộp", value: `${mockSubmissions.length}` },
+        { label: "Tổng bài nộp", value: `${submissions.length}` },
         { label: "Cần xem lại", value: `${plag}`, tone: "danger" },
         { label: "Nghi ngờ", value: `${suspicious}`, tone: "warn" },
         { label: "Không dấu hiệu", value: `${innocent}`, tone: "ok" },
@@ -809,7 +794,7 @@ export default function Dashboard() {
             <FaFileLines size={14} /> Thống kê đạo văn
           </span>
           <span className={`mt-1 block text-xs leading-relaxed ${statsMode === "plagiarism" ? "text-stone-300" : "text-stone-600"}`}>
-            {mockSubmissions.length} bài nộp · {plag} cần xem lại · TB {average}% · cao nhất {highest}%
+            {submissions.length} bài nộp · {plag} cần xem lại · TB {average}% · cao nhất {highest}%
           </span>
         </button>
         <button
@@ -830,7 +815,7 @@ export default function Dashboard() {
             Thống kê AI
           </span>
           <span className={`mt-1 block text-xs leading-relaxed ${statsMode === "ai" ? "text-stone-600" : "text-stone-600"}`}>
-              {sampleLibrary.length} tệp mẫu · 34 chỉ số tĩnh · lọc theo loại, lớp, kết luận và ngưỡng AI
+              {aiResults.length} tệp · 34 chỉ số tĩnh · lọc theo loại, lớp, kết luận và ngưỡng AI
           </span>
           <span className="mt-2 block text-xs font-bold">
             {statsMode === "ai" ? "● Đang chọn — nền trắng, viền đen" : "○ Bấm để mở trang thống kê AI (đen–trắng)"}
@@ -843,8 +828,8 @@ export default function Dashboard() {
           <AiStatsSection />
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {[
-              { to: "/ai-detect/kho-mau", title: "Kho mẫu hệ thống", desc: "Duyệt toàn bộ tệp mẫu AI, người viết và hỗn hợp." },
-              { to: "/ai-detect/cum", title: "Mô hình cụm", desc: "Xem cụm mẫu để hiểu xu hướng viết của từng nhóm." },
+              { to: "/ai-detect/kho-mau", title: "Kho kết quả phân tích", desc: "Duyệt toàn bộ kết quả AI, người viết và hỗn hợp." },
+              { to: "/ai-detect/cum", title: "Mô hình cụm", desc: "Xem cụm bài đã phân tích để hiểu xu hướng viết của từng nhóm." },
               { to: "/ai-detect/analyze?mau=custom", title: "Phân tích mã của tôi", desc: "Nạp file hoặc dán code để chấm ngay trên trình duyệt." },
             ].map((c) => (
               <Link key={c.to} to={c.to} className="group rounded-xl border border-stone-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-900 hover:shadow-md" style={{ borderRadius: 12 }}>
@@ -860,7 +845,7 @@ export default function Dashboard() {
       ) : (
         <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <InfoCard title="Tổng bài nộp" value={mockSubmissions.length} valueSuffix="bài" icon={<FaFileLines size={20} />} iconBgColor="bg-stone-100" iconColor="text-stone-700" showLink={false} />
+        <InfoCard title="Tổng bài nộp" value={submissions.length} valueSuffix="bài" icon={<FaFileLines size={20} />} iconBgColor="bg-stone-100" iconColor="text-stone-700" showLink={false} />
         <InfoCard title="Cần xem lại" value={plag} valueSuffix="bài" valueColor="text-red-700" icon={<FaTriangleExclamation size={20} />} iconBgColor="bg-red-50" iconColor="text-red-700" showLink={false} />
         <InfoCard title="Tương đồng cao nhất" value={highest} valueSuffix="%" icon={<FaChartSimple size={20} />} iconBgColor="bg-amber-50" iconColor="text-amber-700" showLink={false} />
         <InfoCard title="Sinh viên" value={studentCount} valueSuffix="người" icon={<FaUsers size={20} />} iconBgColor="bg-emerald-50" iconColor="text-emerald-700" showLink={false} />
@@ -868,13 +853,13 @@ export default function Dashboard() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardDonut plag={plag} suspicious={suspicious} innocent={innocent} />
-        <DashboardBuckets submissions={mockSubmissions} />
+        <DashboardBuckets submissions={submissions} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="xl:col-span-2">
           <SubmissionsList
-            submissions={mockSubmissions.map((s) => ({ id: s.id, fileName: s.fileName, label: s.label, similarity: s.similarity }))}
+            submissions={submissions.map((s) => ({ id: s.id, fileName: s.fileName, label: s.label, similarity: s.similarity }))}
             maxDisplayItems={6}
             plagiarismColor="text-red-700"
             innocentColor="text-stone-700"

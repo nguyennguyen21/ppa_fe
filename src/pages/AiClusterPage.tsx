@@ -6,20 +6,33 @@ import {
   FaMagnifyingGlassChart,
   FaShareNodes,
 } from "react-icons/fa6";
-import { sampleLibrary, type LibrarySample } from "../data/aiSampleLibrary";
-import type { SampleKind } from "../data/aiSamples";
+import type { LibrarySample, SampleKind } from "../data/aiSampleTypes";
 import { useBackendData } from "../shared/hook/backend-data-context";
+import { EmptyState } from "../shared/Components/UI/feedback/StatePanel";
 import {
   buildClusterModel,
   convexHullFor,
   kindColor,
 } from "../features/plagiarism/utils/cluster";
 import type {
+  ClusterModel,
   ClusterSample,
 } from "../features/plagiarism/utils/cluster";
 import { analyzeCode } from "../features/plagiarism/utils/aiClassify";
 
 const clusterColors = ["#d97706", "#0284c7", "#7c3aed", "#0d9488"];
+
+/** Mô hình rỗng — chỉ dùng khi backend chưa có đủ dữ liệu để phân cụm. */
+const EMPTY_MODEL: ClusterModel = {
+  k: 0,
+  points: [],
+  groups: [],
+  explained: [0, 0],
+  loadings: { pc1: [], pc2: [] },
+  silhouette: 0,
+  edges: [],
+  inertia: 0,
+};
 const kindLabels: Record<SampleKind, string> = {
   ai: "AI tạo",
   human: "Người viết",
@@ -68,7 +81,7 @@ export default function AiClusterPage() {
       })),
     [aiResults],
   );
-  const source = aiResults.length > 0 ? beSamples : sampleLibrary;
+  const source = beSamples;
 
   useEffect(() => {
     let cancelled = false;
@@ -96,8 +109,20 @@ export default function AiClusterPage() {
     [source, beCodes],
   );
 
+  const kindCounts = useMemo(
+    () =>
+      effectiveSamples.reduce(
+        (acc, sample) => {
+          acc[sample.kind] += 1;
+          return acc;
+        },
+        { ai: 0, human: 0, mixed: 0 } as Record<SampleKind, number>,
+      ),
+    [effectiveSamples],
+  );
+
   const model = useMemo(
-    () => buildClusterModel(k, effectiveSamples.length > 0 ? effectiveSamples : undefined),
+    () => (effectiveSamples.length >= 2 ? buildClusterModel(k, effectiveSamples) : EMPTY_MODEL),
     [k, effectiveSamples],
   );
 
@@ -110,6 +135,44 @@ export default function AiClusterPage() {
     () => (selectedPoint ? analyzeCode(selectedPoint.sample.code) : null),
     [selectedPoint],
   );
+
+  if (effectiveSamples.length < 2) {
+    return (
+      <div className="space-y-8">
+        <div className="border-b border-stone-200/80 pb-6">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+              CODEX / Mô hình cụm
+            </p>
+          </div>
+          <h1 className="mt-2 flex items-center gap-3 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm">
+              <FaCircleNodes size={22} />
+            </span>
+            Bản đồ cụm AI và người viết
+          </h1>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-600">
+            Mỗi bài được biểu diễn bằng 10 chỉ số tĩnh, chuẩn hoá và chiếu xuống mặt phẳng bằng PCA.
+            k-means ghép các bài gần nhau thành cụm; mạng láng giềng gần nhất cho thấy bài nào kéo
+            bài nào đi theo.
+          </p>
+        </div>
+        <EmptyState
+          icon={<FaCircleNodes size={17} />}
+          title="Chưa đủ dữ liệu để phân cụm"
+          description="Cần ít nhất 2 bài đã phân tích từ backend. Hãy tải mã nguồn lên để hệ thống phân tích AI/người viết trước."
+          action={
+            <Link
+              to="/ai-detect/analyze"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-amber-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-700"
+            >
+              Phân tích mã nguồn
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
 
   const W = 820;
   const H = 500;
@@ -156,7 +219,7 @@ export default function AiClusterPage() {
           Bản đồ cụm AI và người viết
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-600">
-          {effectiveSamples.length} bài mẫu được biểu diễn bằng 10 chỉ số tĩnh, sau đó được chuẩn
+          {effectiveSamples.length} bài được biểu diễn bằng 10 chỉ số tĩnh, sau đó được chuẩn
           hoá và chiếu xuống mặt phẳng bằng PCA. k-means ghép các bài gần nhau thành các cụm; mạng
           láng giềng gần nhất cho thấy bài nào kéo bài nào đi theo.
         </p>
@@ -166,12 +229,14 @@ export default function AiClusterPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-stone-200 bg-white px-4 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-            Mẫu được phân tích
+            Bài được phân tích
           </p>
           <p className="mt-1 font-serif text-3xl font-semibold text-stone-900">
-            {sampleLibrary.length}
+            {effectiveSamples.length}
           </p>
-          <p className="mt-0.5 text-xs text-stone-600">4 AI · 4 người viết · 4 hỗn hợp</p>
+          <p className="mt-0.5 text-xs text-stone-600">
+            {kindCounts.ai} AI · {kindCounts.human} người viết · {kindCounts.mixed} hỗn hợp
+          </p>
         </div>
         <div className="rounded-xl border border-stone-200 bg-white px-4 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">

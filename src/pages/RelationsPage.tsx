@@ -305,7 +305,7 @@ const DEFAULT_THRESHOLD = 70;
 export default function RelationsPage() {
   const toast = useToast();
   // Nguồn dữ liệu THẬT từ backend (UI giữ nguyên 100%).
-  const { submissions: mockSubmissions, pairs: pairRelations } = useBackendData();
+  const { submissions: submissions, pairs: pairRelations } = useBackendData();
   const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD);
   const [showSingletons, setShowSingletons] = useState(true);
   const [active, setActive] = useState<string | null>(null);
@@ -327,7 +327,7 @@ export default function RelationsPage() {
   const panRef = useRef<{ x: number; y: number; originX: number; originY: number } | null>(null);
   const movedRef = useRef(false);
 
-  const nodes = useMemo(() => buildNodes(mockSubmissions, pairRelations), [mockSubmissions, pairRelations]);
+  const nodes = useMemo(() => buildNodes(submissions, pairRelations), [submissions, pairRelations]);
   const nodeOf = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const initialLayout = useMemo(() => seedLayout(nodes, pairRelations), [nodes, pairRelations]);
   const defaultVisiblePoints = useMemo(() => {
