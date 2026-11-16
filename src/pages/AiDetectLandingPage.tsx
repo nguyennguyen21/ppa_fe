@@ -7,10 +7,8 @@ import {
   FaUser,
   FaWandMagicSparkles,
 } from "react-icons/fa6";
-import { samples, sampleInfo, type SampleKind } from "../data/aiSamples";
-import { sampleLibrary, samplesOfKind } from "../data/aiSampleLibrary";
+import type { SampleKind } from "../data/aiSampleTypes";
 import { useBackendData } from "../shared/hook/backend-data-context";
-import { analyzeCode, type AnalysisResult } from "../features/plagiarism/utils/aiClassify";
 
 interface LandingCardData {
   id: string;
@@ -22,7 +20,6 @@ interface LandingCardData {
   };
   entries: number;
   averageAi: number;
-  analysis: AnalysisResult;
   preview: string[];
   fileName: string;
 }
@@ -67,8 +64,6 @@ const verdictLabel = (averageAi: number) => {
   return `${Math.round(averageAi * 100)}% AI · chưa rõ`;
 };
 
-const snippetLines = (code: string) => code.replace(/\s+$/, "").split("\n").slice(0, 8);
-
 const isPreviewComment = (line: string) => {
   const trimmed = line.trim();
   return (
@@ -84,65 +79,44 @@ export default function AiDetectLandingPage() {
   const { aiResults } = useBackendData();
 
   const cards = useMemo<LandingCardData[]>(() => {
-    if (aiResults.length === 0) {
-      return samples.map((sample) => {
-        const entries = samplesOfKind(sample.id);
-        const analyses = entries.map((entry) => analyzeCode(entry.code));
-        const averageAi = analyses.reduce((sum, item) => sum + item.aiProbability, 0) / analyses.length;
-
-        return {
-          id: sample.id,
-          info: sampleInfo[sample.id],
-          entries: entries.length,
-          averageAi,
-          analysis: analyses[0],
-          preview: snippetLines(entries[0]?.code ?? ""),
-          fileName: entries[0]?.fileName ?? sampleInfo[sample.id].fileName,
-        };
-      });
-    }
-
-    const infoByKind: Record<SampleKind, { fileName: string; title: string; description: string; accent: "amber" | "emerald" | "stone" }> = {
+    const infoByKind: Record<SampleKind, { title: string; description: string; accent: "amber" | "emerald" | "stone" }> = {
       ai: {
-        fileName: "student_record.py",
         title: "Code do AI sinh",
-        description: "Docstring đầy đủ, type hints, tên biến dài và thụt lề đều. Mẫu lấy từ kho mã nguồn của hệ thống.",
+        description: "Docstring đầy đủ, type hints, tên biến dài và thụt lề đều — những dấu hiệu thường gặp ở code do AI tạo.",
         accent: "amber",
       },
       human: {
-        fileName: "sap_xep.c",
         title: "Code người viết",
-        description: "Hàm ngắn, biến i/n/a, ít chú thích và viết liền. Mẫu lấy từ kho mã nguồn của hệ thống.",
+        description: "Hàm ngắn, biến i/n/a, ít chú thích và viết liền — những dấu hiệu thường gặp ở code viết tay.",
         accent: "emerald",
       },
       mixed: {
-        fileName: "hinh_hoc.py",
         title: "Mã hỗn hợp",
-        description: "Nửa đầu có cấu trúc, nửa sau viết tay nhanh. Mẫu lấy từ kho mã nguồn của hệ thống.",
+        description: "Nửa đầu có cấu trúc, nửa sau viết tay nhanh — những bài có dấu hiệu lẫn giữa AI và người viết.",
         accent: "stone",
       },
     };
-    const built: LandingCardData[] = (["ai", "human", "mixed"] as SampleKind[]).map((kind) => {
+    return (["ai", "human", "mixed"] as SampleKind[]).map((kind) => {
       const items = aiResults.filter((r) => r.prediction === kind);
-      const averageAi = items.length > 0 ? items.reduce((sum, r) => sum + (r.confidence ?? 0), 0) / items.length : 0;
+      const averageAi =
+        items.length > 0
+          ? items.reduce((sum, r) => sum + (r.confidence ?? 0), 0) / items.length
+          : 0;
       const first = items[0];
       const info = infoByKind[kind];
       return {
         id: kind,
         info: {
           ...info,
-          fileName: first?.fileName ?? info.fileName,
-          title: first?.fileName ?? info.title,
+          fileName: first?.fileName ?? "Chưa có tệp",
         },
         entries: items.length,
         averageAi,
-        analysis: analyzeCode(""),
-        preview: snippetLines(""),
-        fileName: first?.fileName ?? info.fileName,
+        preview: [],
+        fileName: first?.fileName ?? "Chưa có tệp",
       };
     });
-    return built;
-  }, [aiResults, samples, samplesOfKind, analyzeCode]);
+  }, [aiResults]);
 
   return (
     <div className="space-y-8">
@@ -156,8 +130,9 @@ export default function AiDetectLandingPage() {
             Chọn mã nguồn để phân tích
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
-            Ba nhóm mẫu được lấy từ kho mã nguồn của hệ thống. Chọn một nhóm để xem danh sách
-            tệp, rồi mở trang phân tích để xem 34 chỉ số và nhấn vào từng dòng để đọc giải thích.
+            Ba nhóm kết quả phân loại được tổng hợp từ dữ liệu backend. Chọn một nhóm để xem
+            danh sách tệp, rồi mở trang phân tích để xem 34 chỉ số và nhấn vào từng dòng để đọc
+            giải thích.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -165,7 +140,7 @@ export default function AiDetectLandingPage() {
             to="/ai-detect/kho-mau"
             className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50 hover:shadow-md"
           >
-            Kho mẫu hệ thống · {sampleLibrary.length} tệp
+            Kho kết quả · {aiResults.length} tệp
             <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
@@ -207,11 +182,13 @@ export default function AiDetectLandingPage() {
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${accent.chip}`}
-                  >
-                    {verdictLabel(card.averageAi)}
-                  </span>
+                  {card.entries > 0 && (
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${accent.chip}`}
+                    >
+                      {verdictLabel(card.averageAi)}
+                    </span>
+                  )}
                 </div>
 
                 <h2 className="mt-4 font-serif text-xl font-semibold tracking-tight text-stone-900">
@@ -231,46 +208,33 @@ export default function AiDetectLandingPage() {
                     </span>
                   </div>
                   <pre className="h-[144px] overflow-hidden px-3 py-2 font-mono text-xs leading-[1.7]">
-                    {card.preview.map((line, index) => (
-                      <div
-                        key={index}
-                        className={
-                          isPreviewComment(line)
-                            ? "text-stone-500"
-                            : line.trim() === ""
-                              ? "text-transparent"
-                              : "text-stone-700"
-                        }
-                      >
-                        {line || " "}
-                      </div>
-                    ))}
+                    {card.preview.length === 0 ? (
+                      <span className="text-stone-500">Chưa có dữ liệu từ backend.</span>
+                    ) : (
+                      card.preview.map((line, index) => (
+                        <div
+                          key={index}
+                          className={
+                            isPreviewComment(line)
+                              ? "text-stone-500"
+                              : line.trim() === ""
+                                ? "text-transparent"
+                                : "text-stone-700"
+                          }
+                        >
+                          {line || " "}
+                        </div>
+                      ))
+                    )}
                   </pre>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between gap-3 border-t border-stone-100 pt-3 text-xs text-stone-600">
-                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span>
-                      <span className="font-semibold text-stone-700">
-                        {card.analysis.metrics.totalLines}
-                      </span>{" "}
-                      dòng
-                    </span>
-                    <span>
-                      <span className="font-semibold text-stone-700">
-                        {card.analysis.functionCount}
-                      </span>{" "}
-                      hàm
-                    </span>
-                    <span>
-                      <span className="font-semibold text-stone-700">
-                        {Math.round(card.analysis.metrics.commentRatio * 100)}%
-                      </span>{" "}
-                      chú thích
-                    </span>
+                  <span className="text-stone-500">
+                    {card.entries > 0 ? "Dữ liệu backend" : "Chưa có dữ liệu"}
                   </span>
                   <span className="inline-flex items-center gap-1.5 font-semibold text-stone-900">
-                    Xem {card.entries} tệp
+                    {card.entries > 0 ? `Xem ${card.entries} tệp` : "Chưa có kết quả"}
                     <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </div>

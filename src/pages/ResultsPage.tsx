@@ -46,7 +46,7 @@ export default function ResultsPage() {
   const navigate = useNavigate();
   const toast = useToast();
   // Nguồn dữ liệu THẬT từ backend (UI giữ nguyên 100%).
-  const { submissions: mockSubmissions } = useBackendData();
+  const { submissions: submissions } = useBackendData();
   const { density } = usePrefs();
   const rowPad = density === "compact" ? "p-3" : "p-4";
   const [page, setPage] = useState(1);
@@ -58,20 +58,20 @@ export default function ResultsPage() {
 
   const stats = useMemo(
     () => ({
-      total: mockSubmissions.length,
-      plag: mockSubmissions.filter((s) => s.label === "plagiarism").length,
-      suspicious: mockSubmissions.filter((s) => s.label === "suspicious").length,
-      innocent: mockSubmissions.filter((s) => s.label === "innocent").length,
-      avg: mockSubmissions.length > 0
-        ? Math.round(mockSubmissions.reduce((a, s) => a + s.similarity, 0) / mockSubmissions.length)
+      total: submissions.length,
+      plag: submissions.filter((s) => s.label === "plagiarism").length,
+      suspicious: submissions.filter((s) => s.label === "suspicious").length,
+      innocent: submissions.filter((s) => s.label === "innocent").length,
+      avg: submissions.length > 0
+        ? Math.round(submissions.reduce((a, s) => a + s.similarity, 0) / submissions.length)
         : 0,
     }),
-    [mockSubmissions],
+    [submissions],
   );
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
-    return mockSubmissions
+    return submissions
       .filter((s) => label === "all" || s.label === label)
       .filter((s) => !q || s.fileName.toLowerCase().includes(q) || s.studentName.toLowerCase().includes(q) || s.studentCode.toLowerCase().includes(q))
       .sort((a, b) =>
@@ -81,7 +81,7 @@ export default function ResultsPage() {
             ? a.fileName.localeCompare(b.fileName)
             : b.uploadedAt.localeCompare(a.uploadedAt),
       );
-  }, [query, label, sort, mockSubmissions]);
+  }, [query, label, sort, submissions]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -111,8 +111,8 @@ export default function ResultsPage() {
       toast.error("Chưa đủ 2 bài", "Hãy chọn đúng 2 bài nộp để mở trang so sánh.");
       return;
     }
-    const first = mockSubmissions.find((s) => s.id === selected[0]);
-    const second = mockSubmissions.find((s) => s.id === selected[1]);
+    const first = submissions.find((s) => s.id === selected[0]);
+    const second = submissions.find((s) => s.id === selected[1]);
     if (!first || !second) return;
     navigate(`/compare?a=${encodeURIComponent(first.fileName)}&b=${encodeURIComponent(second.fileName)}`);
   };

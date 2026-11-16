@@ -100,7 +100,7 @@ interface BackendDataValue {
   studentCount: number;
   /** Số cụm liên kết suy ra từ cặp tương đồng thật. */
   clusters: ClusterSummary[];
-  /** Kết quả phân tích AI cho từng snippet đã quét (dùng cho trang thống kê / kho mẫu AI). */
+  /** Kết quả phân tích AI cho từng snippet đã quét (dùng cho trang thống kê / kho kết quả AI). */
   aiResults: AiFileResult[];
   /** Đang nạp kết quả phân tích AI từ backend (hiện tại có thể đang tính). */
   aiLoading: boolean;

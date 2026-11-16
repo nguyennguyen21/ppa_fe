@@ -39,12 +39,12 @@ const META: Record<string, PageMeta> = {
       "Trực quan hoá các cặp bài tương đồng, cụm liên kết và mức độ liên hệ giữa các bài nộp.",
   },
   "/ai-detect/kho-mau": {
-    title: "Kho mẫu mã nguồn — CODEX",
-    description: "Thư viện mẫu code AI, người viết và hỗn hợp dùng để thử nghiệm phân loại.",
+    title: "Kho kết quả phân tích — CODEX",
+    description: "Danh sách kết quả phân loại AI, người viết và hỗn hợp do backend trả về.",
   },
   "/ai-detect/cum": {
     title: "Mô hình cụm — CODEX",
-    description: "Xem các bài mẫu được gom cụm theo đặc trưng chỉ số và trực quan hoá PCA.",
+    description: "Xem các bài đã phân tích được gom cụm theo đặc trưng chỉ số và trực quan hoá PCA.",
   },
   "/ai-detect/analyze": {
     title: "Phân tích mã nguồn — CODEX",
