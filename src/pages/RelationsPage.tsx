@@ -127,8 +127,8 @@ function buildClusters(nodes: Node[], pairs: PairRelation[]) {
 }
 
 // ---------------------------------------------------------------------------
-// Layout đám mây: mọi bài trải đều khung vẽ thành các chấm tròn, khoảng cách
-// đủ thở, nhãn chỉ hiện khi hover/chọn để biểu đồ luôn sạch và dễ đọc.
+// Layout hình tròn: mọi bài trải đều trong một vòng tròn lớn (góc vàng), khoảng
+// cách đủ thở, nhãn chỉ hiện khi hover/chọn để biểu đồ luôn sạch và dễ đọc.
 // ---------------------------------------------------------------------------
 
 interface Placed {
@@ -199,8 +199,7 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
   const clusters = buildClusters(nodes, pairs);
   const placed = new Map<string, Placed>();
 
-  // Xếp các bài thành một "đám mây" điểm trải đều toàn khung vẽ: mỗi bài một ô
-  // lưới cộng nhiễu nhỏ, bài cùng cụm nằm cạnh nhau để vẫn thấy được quan hệ.
+  // Giữ thứ tự bài theo cụm để bố cục ổn định giữa các lần render.
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const ordered: string[] = [];
   const seen = new Set<string>();
@@ -219,33 +218,50 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
     }
   }
 
-  const padX = 52;
-  const padY = 46;
+  // Xếp theo "best-candidate" (blue noise): mỗi bài chọn vị trí xa các bài đã đặt
+  // nhất bên trong một vòng tròn — mật độ đều, không xếp hàng, không xoắn ốc.
+  const cx = W / 2;
+  const cy = H / 2;
+  const radius = Math.min(W / 2 - 80, H / 2 - 50);
   const count = Math.max(ordered.length, 1);
-  const usableW = W - padX * 2;
-  const usableH = H - padY * 2;
-  const cols = Math.max(1, Math.ceil(Math.sqrt(count * (usableW / usableH))));
-  const rows = Math.max(1, Math.ceil(count / cols));
-  const cellW = usableW / cols;
-  const cellH = usableH / rows;
+  const points: { x: number; y: number }[] = [];
 
   ordered.forEach((id, i) => {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    // Hàng lẻ so le nửa ô + nhiễu rộng để đám điểm không xếp thành hàng cứng.
-    const stagger = row % 2 === 1 ? cellW * 0.5 : 0;
-    const jx = (seededNoise(i, 1) - 0.5) * cellW * 0.82;
-    const jy = (seededNoise(i, 2) - 0.5) * cellH * 0.82;
-    placed.set(id, {
-      x: clamp(padX + ((col + 0.5) * cellW + stagger) % usableW + jx, padX, W - padX),
-      y: clamp(padY + (row + 0.5) * cellH + jy, padY, H - padY),
-      vx: 0,
-      vy: 0,
-      r: NODE_RADIUS,
-    });
+    let bx = cx;
+    let by = cy;
+    let bestDist = -1;
+    for (let c = 0; c < 14; c++) {
+      const seed = i * 31 + c * 7;
+      const angle = seededNoise(seed, 11) * Math.PI * 2;
+      const r = radius * Math.sqrt(seededNoise(seed, 23));
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+      if (i === 0) {
+        bx = x;
+        by = y;
+        break;
+      }
+      let nearest = Infinity;
+      for (const p of points) {
+        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+        if (d < nearest) nearest = d;
+      }
+      if (nearest > bestDist) {
+        bestDist = nearest;
+        bx = x;
+        by = y;
+      }
+    }
+    points.push({ x: bx, y: by });
+    placed.set(id, { x: bx, y: by, vx: 0, vy: 0, r: NODE_RADIUS });
   });
 
-  relaxLayout(placed, Math.max(NODE_RADIUS * 2 + 8, Math.min(MIN_NODE_DISTANCE, Math.min(cellW, cellH) * 1.05)));
+  // Khoảng cách tối thiểu co theo mật độ để dữ liệu dày vẫn không chồng chấm.
+  const spacing = Math.sqrt((Math.PI * radius * radius) / count);
+  relaxLayout(
+    placed,
+    Math.max(NODE_RADIUS * 2 + 8, Math.min(MIN_NODE_DISTANCE, spacing * 0.95)),
+  );
 
   return { clusters, placed };
 }
@@ -749,7 +765,7 @@ export default function RelationsPage() {
                         y1={a.y}
                         x2={b.x}
                         y2={b.y}
-                        stroke={focused ? "currentColor" : "#cfcac4"}
+                        stroke={focused ? "currentColor" : "#e2ded9"}
                         className={focused ? "text-stone-800" : ""}
                         strokeWidth={focused ? 1.8 : 1}
                       />
