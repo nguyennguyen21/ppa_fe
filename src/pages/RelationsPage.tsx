@@ -6,6 +6,7 @@ import {
   FaCodeCompare,
   FaDownload,
   FaExpand,
+  FaHighlighter,
   FaImage,
   FaKeyboard,
   FaMagnifyingGlass,
@@ -58,6 +59,13 @@ const toneLabel: Record<Tone, string> = {
 const toneSoft: Record<Tone, string> = {
   innocent: "var(--node-innocent-soft)",
   plagiarism: "var(--node-plagiarism-soft)",
+};
+
+/** Bổ sung: màu đường nối theo mức tương đồng khi bật tô sáng quan hệ. */
+const relationBand = (similarity: number) => {
+  if (similarity >= 90) return { color: "#b45309", label: "≥ 90%" };
+  if (similarity >= 80) return { color: "#d97706", label: "80–89%" };
+  return { color: "#f59e0b", label: "< 80%" };
 };
 
 /** Rút gọn tên file hiển thị dưới node để nhãn không kéo dài, đè lên nhãn khác. */
@@ -322,6 +330,9 @@ export default function RelationsPage() {
     b: Node;
     similarity: number;
   } | null>(null);
+  // Bổ sung: bật/tắt lớp tô sáng quan hệ và cặp đang được rê chuột trên biểu đồ.
+  const [highlightRelations, setHighlightRelations] = useState(true);
+  const [highlightPair, setHighlightPair] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<string | null>(null);
   const panRef = useRef<{ x: number; y: number; originX: number; originY: number } | null>(null);
@@ -389,6 +400,9 @@ export default function RelationsPage() {
     { k: "Bài có liên hệ", v: `${visibleIds.size}` },
     { k: "Cụm liên kết", v: `${clusters.filter((c) => c.maxSim >= threshold).length}` },
   ];
+
+  // Bổ sung: danh sách cặp nổi bật dùng cho lớp tô sáng quan hệ.
+  const topPairs = [...visibleEdges].sort((a, b) => b.similarity - a.similarity).slice(0, 5);
 
   const toWorld = (event: MouseEvent<SVGSVGElement>) => {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -684,6 +698,19 @@ export default function RelationsPage() {
               >
                 <FaKeyboard /> Phím tắt
               </button>
+              <button
+                type="button"
+                onClick={() => setHighlightRelations((v) => !v)}
+                aria-pressed={highlightRelations}
+                className={`inline-flex items-center gap-1 rounded-xl border px-2 py-1 text-xs font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+                  highlightRelations
+                    ? "border-amber-300 bg-amber-50 text-amber-800"
+                    : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
+                }`}
+                title="Tô sáng các đường nối quan hệ theo mức tương đồng"
+              >
+                <FaHighlighter /> Quan hệ
+              </button>
               <span className="ml-1 flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: toneFill.innocent }} />
                 Bài sạch
@@ -695,6 +722,19 @@ export default function RelationsPage() {
               <span className="flex items-center gap-1.5">
                 <span className="h-px w-4 bg-stone-500" /> Cặp ≥ {threshold}%
               </span>
+              {highlightRelations && (
+                <span className="flex items-center gap-2 rounded-full bg-amber-50 px-2 py-0.5 ring-1 ring-amber-200">
+                  <span className="flex items-center gap-1">
+                    <span className="h-0.5 w-4 rounded-full" style={{ background: "#b45309" }} /> ≥ 90%
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-0.5 w-4 rounded-full" style={{ background: "#d97706" }} /> 80–89%
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-0.5 w-4 rounded-full" style={{ background: "#f59e0b" }} /> &lt; 80%
+                  </span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -785,6 +825,59 @@ export default function RelationsPage() {
                     </g>
                   );
                 })}
+
+                {/* Bổ sung: lớp tô sáng quan hệ — màu theo mức tương đồng, đậm lên khi
+                    rê chuột vào một chấm, chọn một bài hoặc trỏ vào cặp nổi bật. */}
+                {highlightRelations &&
+                  visibleEdges.map((e) => {
+                    const a = placed.get(e.aId);
+                    const b = placed.get(e.bId);
+                    if (!a || !b) return null;
+                    const band = relationBand(e.similarity);
+                    const touched =
+                      highlightPair === e.id ||
+                      (active !== null && (active === e.aId || active === e.bId)) ||
+                      (focusedNode !== null && (focusedNode === e.aId || focusedNode === e.bId));
+                    const dimmed = active !== null && active !== e.aId && active !== e.bId;
+                    const strength = Math.max(
+                      0,
+                      Math.min(1, (e.similarity - threshold) / Math.max(1, 100 - threshold)),
+                    );
+                    return (
+                      <g key={`hl-${e.id}`} style={{ pointerEvents: "none" }}>
+                        <line
+                          x1={a.x}
+                          y1={a.y}
+                          x2={b.x}
+                          y2={b.y}
+                          stroke={band.color}
+                          strokeWidth={touched ? 7 : 4 + strength * 2}
+                          strokeOpacity={dimmed ? 0.04 : touched ? 0.18 : 0.08}
+                          strokeLinecap="round"
+                        />
+                        <line
+                          x1={a.x}
+                          y1={a.y}
+                          x2={b.x}
+                          y2={b.y}
+                          stroke={band.color}
+                          strokeWidth={touched ? 3.2 : 1 + strength * 2}
+                          strokeOpacity={dimmed ? 0.12 : touched ? 0.95 : 0.22 + strength * 0.45}
+                          strokeLinecap="round"
+                          className="transition-opacity duration-150"
+                        >
+                          {touched && (
+                            <animate
+                              attributeName="stroke-opacity"
+                              values="0.45;0.95;0.45"
+                              dur="1.8s"
+                              repeatCount="indefinite"
+                            />
+                          )}
+                        </line>
+                      </g>
+                    );
+                  })}
 
                 {visibleNodes.map((n) => {
                   const p = placed.get(n.id);
@@ -1051,6 +1144,60 @@ export default function RelationsPage() {
                   </span>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <div
+            className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            style={{ borderRadius: 12 }}
+          >
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-900">
+              <FaHighlighter className="text-amber-600" /> Mối quan hệ nổi bật
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-stone-600">
+              Rê chuột lên một cặp để tô sáng đường nối và hai bài liên quan trên biểu đồ.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {topPairs.map((p) => {
+                const band = relationBand(p.similarity);
+                const isHot = highlightPair === p.id;
+                return (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onMouseEnter={() => setHighlightPair(p.id)}
+                      onMouseLeave={() => setHighlightPair(null)}
+                      onFocus={() => setHighlightPair(p.id)}
+                      onBlur={() => setHighlightPair(null)}
+                      onClick={() => {
+                        setHighlightPair(p.id);
+                        setActive(p.aId);
+                      }}
+                      className={`flex w-full items-center justify-between gap-2 border px-3 py-2 text-left text-xs transition ${
+                        isHot
+                          ? "border-amber-300 bg-amber-50"
+                          : "border-stone-200 bg-white hover:border-amber-200 hover:bg-amber-50/40"
+                      }`}
+                      style={{ borderRadius: 10 }}
+                    >
+                      <span className="min-w-0 flex-1 truncate text-stone-700">
+                        {p.aName} ↔ {p.bName}
+                      </span>
+                      <span className="shrink-0 font-bold" style={{ color: band.color }}>
+                        {p.similarity}%
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+              {topPairs.length === 0 && (
+                <li
+                  className="border border-dashed border-stone-300 px-3 py-4 text-center text-xs text-stone-600"
+                  style={{ borderRadius: 10 }}
+                >
+                  Chưa có cặp nào ở ngưỡng {threshold}%.
+                </li>
+              )}
             </ul>
           </div>
         </aside>
