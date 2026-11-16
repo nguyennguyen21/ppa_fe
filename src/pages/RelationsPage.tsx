@@ -140,7 +140,7 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
   const centers = clusters.map((_, ci) => {
     const n = clusters.length;
     const angle = (ci / Math.max(n, 1)) * Math.PI * 2 - Math.PI / 2;
-    const dist = n <= 1 ? 0 : 150;
+    const dist = n <= 1 ? 0 : 210;
     return { x: W / 2 + dist * Math.cos(angle), y: H / 2 - 30 + dist * Math.sin(angle) };
   });
 
@@ -158,7 +158,7 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
         return;
       }
       const angle = (i / ids.length) * Math.PI * 2 - Math.PI / 2;
-      const orbit = ids.length <= 3 ? 34 : ids.length <= 5 ? 46 : 58;
+      const orbit = ids.length <= 3 ? 46 : ids.length <= 5 ? 60 : 76;
       placed.set(id, {
         x: c.x + orbit * Math.cos(angle),
         y: c.y + orbit * Math.sin(angle),
@@ -176,7 +176,7 @@ function seedLayout(nodes: Node[], pairs: PairRelation[]) {
 
   const orphaned = nodes.filter((n) => !placed.has(n.id));
   orphaned.forEach((n, i) => {
-    placed.set(n.id, { x: 120 + i * 56, y: H - 56, vx: 0, vy: 0, r: 8 });
+    placed.set(n.id, { x: 100 + (i % 12) * 64, y: H - 56 - Math.floor(i / 12) * 22, vx: 0, vy: 0, r: 8 });
   });
 
   return { clusters, placed };
@@ -671,7 +671,6 @@ export default function RelationsPage() {
                   if (!a || !b || !nodeA || !nodeB) return null;
                   const focused = active === e.aId || active === e.bId;
                   const dim = active !== null && !focused;
-                  const col = toneFill[nodeA.tone];
                   const midX = (a.x + b.x) / 2;
                   const midY = (a.y + b.y) / 2;
                   return (
@@ -698,9 +697,9 @@ export default function RelationsPage() {
                         y={midY - 5}
                         textAnchor="middle"
                         fontSize="11"
-                        fill={col}
+                        fill="#44403c"
                         fontWeight={focused ? 700 : 600}
-                        style={{ pointerEvents: "none" }}
+                        style={{ pointerEvents: "none", paintOrder: "stroke", stroke: "#ffffff", strokeWidth: 3 }}
                       >
                         {e.similarity}%
                       </text>
