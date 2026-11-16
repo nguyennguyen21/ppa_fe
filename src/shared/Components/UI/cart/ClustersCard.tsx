@@ -90,12 +90,12 @@ const ClustersCard: React.FC<ClustersCardProps> = ({
       </div>
 
       {/* Clusters Badges */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2.5 mb-4">
         {displayClusters.map((cluster, index) => (
           <button
             key={cluster.id}
             onClick={() => onClusterClick?.(cluster)}
-            className={`${clusterBgColor} ${clusterTextColor} w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm`}
+            className={`${clusterBgColor} ${clusterTextColor} h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:scale-110 hover:shadow-md cursor-pointer`}
             title={cluster.label || `Cụm ${index + 1}`}
           >
             {cluster.count}

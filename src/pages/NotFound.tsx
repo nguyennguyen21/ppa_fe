@@ -1,3 +1,5 @@
+import { FaArrowRight } from "react-icons/fa6";
+
 export default function NotFound() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-4 py-20 text-center">
@@ -14,22 +16,7 @@ export default function NotFound() {
           className="group mt-8 inline-flex items-center gap-2 rounded-xl bg-stone-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md active:scale-[0.98]"
         >
           Về trang tổng quan
-          <svg
-            className="transition-transform group-hover:translate-x-0.5"
-            width="20"
-            height="20"
-            viewBox="0 0 22 22"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M4.583 11h12.833m0 0L11 4.584M17.416 11 11 17.417"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <FaArrowRight className="transition-transform group-hover:translate-x-0.5" />
         </a>
       </div>
     </div>
