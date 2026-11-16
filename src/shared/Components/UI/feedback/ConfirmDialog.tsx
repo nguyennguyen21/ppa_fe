@@ -109,8 +109,8 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               aria-modal="true"
               aria-labelledby="confirm-title"
               aria-describedby={state.description ? "confirm-description" : undefined}
-              className="modal-in relative w-full max-w-md border border-stone-200 bg-white p-6 shadow-2xl"
-              style={{ borderRadius: 12 }}
+              className="modal-in relative w-full max-w-md border border-stone-200 bg-white p-7 shadow-2xl shadow-stone-900/15"
+              style={{ borderRadius: 16 }}
             >
               <div className="flex items-start gap-3.5">
                 <span

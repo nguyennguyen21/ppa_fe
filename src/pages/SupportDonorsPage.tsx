@@ -79,27 +79,25 @@ export default function SupportDonorsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* HEADER */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
-            CODEX / Hỗ trợ
-          </p>
-
-          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Hỗ trợ</p>
+ 
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
             Danh sách người ủng hộ
           </h1>
-
+ 
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
             Danh sách các người đã ủng hộ CODEX cùng số tiền họ
             đã chuyển qua các kênh thanh toán.
           </p>
         </div>
-
+ 
         <Link
           to="/support"
-          className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-2 text-xs font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-stone-900"
         >
           Trang ủng hộ
           <FaArrowRight className="text-xs" />
@@ -116,17 +114,17 @@ export default function SupportDonorsPage() {
         </CardDescription>
 
         {loading ? (
-          <div className="mt-5 rounded-lg border border-stone-200 bg-[#fbfbfa] p-6 text-center">
+          <div className="mt-5 rounded-xl border border-stone-200 bg-[#fbfbfa] p-6 text-center shadow-sm">
             <p className="text-sm font-semibold text-stone-900">
               Đang tải danh sách...
             </p>
           </div>
         ) : error ? (
-          <div className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-xs text-red-700">
+          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 shadow-sm">
             {error}
           </div>
         ) : donations.length === 0 ? (
-          <div className="mt-5 rounded-lg border border-stone-200 bg-[#fbfbfa] p-6 text-center">
+          <div className="mt-5 rounded-xl border border-stone-200 bg-[#fbfbfa] p-6 text-center shadow-sm">
             <FaHeart className="mx-auto text-rose-400" size={22} />
 
             <p className="mt-2 text-sm font-semibold text-stone-900">
@@ -143,10 +141,10 @@ export default function SupportDonorsPage() {
             {donations.map((donation, index) => (
               <div
                 key={donation.id ?? `donation-${index}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-[#fbfbfa] p-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-[#fbfbfa] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-sm font-bold text-rose-600">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-sm font-bold text-rose-600 shadow-sm">
                     {index + 1}
                   </span>
 
@@ -170,7 +168,7 @@ export default function SupportDonorsPage() {
                     to={`/support/receipt?sender=${encodeURIComponent(
                       donation.senderName
                     )}&amount=${donation.amount}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:border-stone-400 hover:text-stone-900"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-400 hover:text-stone-900"
                   >
                     <FaPrint /> In biên lai
                   </Link>
@@ -182,7 +180,7 @@ export default function SupportDonorsPage() {
       </Card>
 
       {/* FOOTER */}
-      <div className="rounded-lg border border-stone-200 bg-white p-4">
+      <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <FaHeart className="mt-0.5 shrink-0 text-rose-500" />
 

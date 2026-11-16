@@ -10,20 +10,20 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  "inline-flex items-center justify-center gap-2 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2";
+  "inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.98] hover:-translate-y-px";
 
 const variantStyles: Record<Variant, string> = {
-  primary: "bg-stone-900 text-white hover:bg-stone-800",
+  primary: "bg-stone-900 text-white shadow-sm hover:bg-stone-800 hover:shadow-md",
   secondary:
-    "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700",
+    "border border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50 hover:shadow-md dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700",
   ghost: "text-stone-700 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100",
-  danger: "bg-red-700 text-white hover:bg-red-800",
+  danger: "bg-red-700 text-white shadow-sm hover:bg-red-800 hover:shadow-md",
 };
 
 const sizeStyles: Record<Size, string> = {
-  sm: "px-2.5 py-1.5 text-xs",
-  md: "px-4 py-2.5 text-sm",
-  lg: "px-5 py-3 text-sm",
+  sm: "px-3 py-1.5 text-xs rounded-lg",
+  md: "px-4 py-2.5 text-sm rounded-lg",
+  lg: "px-6 py-3 text-sm rounded-xl",
 };
 
 export function Button({
@@ -38,7 +38,6 @@ export function Button({
     <button
       type={type}
       className={`${base} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-      style={{ borderRadius: 8 }}
       {...rest}
     >
       {children}
@@ -85,8 +84,8 @@ export function Card({
 }) {
   return (
     <div
-      className={`border border-stone-200 bg-white ${padded ? "p-5" : ""} ${className}`}
-      style={{ borderRadius: 10 }}
+      className={`border border-stone-200/80 bg-white shadow-sm transition-shadow hover:shadow-md ${padded ? "p-5 sm:p-6" : ""} ${className}`}
+      style={{ borderRadius: 12 }}
     >
       {children}
     </div>

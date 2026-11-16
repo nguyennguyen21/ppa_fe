@@ -31,28 +31,26 @@ export default function SupportReceiptPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* HEADER */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
-            CODEX / Hỗ trợ
-          </p>
-
-          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Hỗ trợ</p>
+ 
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
             Biên lai ủng hộ
           </h1>
-
+ 
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
             Biên lai ghi nhận tên người ủng hộ và số tiền ủng hộ đã
             chuyển qua CODEX.
           </p>
         </div>
-
+ 
         <button
           type="button"
           onClick={handlePrint}
-          className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-2 text-xs font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-stone-900"
         >
           <FaPrint /> In biên lai
         </button>
@@ -65,7 +63,7 @@ export default function SupportReceiptPage() {
           Thông tin người đã gửi khoản ủng hộ cho CODEX.
         </CardDescription>
 
-        <div className="mt-5 rounded-lg bg-stone-50 p-4">
+        <div className="mt-5 rounded-xl bg-stone-50 p-4 shadow-sm ring-1 ring-stone-200">
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
             Người ủng hộ
           </p>
@@ -75,7 +73,7 @@ export default function SupportReceiptPage() {
           </p>
         </div>
 
-        <div className="mt-5 rounded-lg bg-stone-50 p-4">
+        <div className="mt-5 rounded-xl bg-stone-50 p-4 shadow-sm ring-1 ring-stone-200">
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
             Số tiền ủng hộ
           </p>
@@ -85,7 +83,7 @@ export default function SupportReceiptPage() {
           </p>
         </div>
 
-        <div className="mt-5 rounded-lg border border-stone-200 bg-[#fbfbfa] p-4">
+        <div className="mt-5 rounded-xl border border-stone-200 bg-[#fbfbfa] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
             Nội dung chuyển khoản
           </p>
@@ -114,7 +112,7 @@ export default function SupportReceiptPage() {
       </div>
 
       {/* FOOTER */}
-      <div className="rounded-lg border border-stone-200 bg-white p-4">
+      <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <FaHeart className="mt-0.5 shrink-0 text-rose-500" />
 

@@ -114,11 +114,11 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-8">
       {/* Header */}
-      <div className="border-b border-stone-200 pb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / Bài nộp</p>
-        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">Nạp bài nộp để quét</h1>
+      <div className="border-b border-stone-200/80 pb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Bài nộp</p>
+        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">Nạp bài nộp để quét</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
           Có thể nạp nhiều file code, cả thư mục hoặc file zip. Hệ thống tự tách nội dung zip
           thành danh sách file riêng, giữ nguyên đường dẫn để dễ rà soát.
@@ -126,11 +126,11 @@ export default function UploadPage() {
       </div>
 
       {/* Steps */}
-      <ol className="flex items-center gap-3">
+      <ol className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
         {steps.map((s, i) => (
           <li key={s} className="flex flex-1 items-center gap-2.5">
             <span
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold shadow-sm ${
                 i < step
                   ? "border-stone-900 bg-stone-900 text-white"
                   : i === step
@@ -146,12 +146,12 @@ export default function UploadPage() {
         ))}
       </ol>
 
-      <section className="border border-stone-200 bg-white p-5 sm:p-8" style={{ borderRadius: 10 }}>
+      <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8" style={{ borderRadius: 12 }}>
         {step === 0 && (
           <>
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold text-stone-900">Chọn file</h2>
+                <h2 className="text-lg font-semibold text-stone-900">Chọn file</h2>
                 <p className="mt-1 text-sm text-stone-600">Kéo thả vào ô bên dưới, hoặc nhấn để duyệt từ máy.</p>
               </div>
               <p className="text-xs text-stone-600">.c .cpp .py .java .js .ts .zip · tối đa 100 MB</p>
@@ -163,7 +163,7 @@ export default function UploadPage() {
                 disabled={files.length === 0 || scanning}
                 onClick={() => void startScan()}
                 data-guide="upload-continue"
-                className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
               >
                 Tiếp tục <FaArrowRight className="text-xs" />
               </button>
@@ -181,22 +181,22 @@ export default function UploadPage() {
                   Đã xử lý {processed}/{files.length} file
                   {eta !== null && eta > 0 ? ` · còn khoảng ${eta}s` : " · đang hoàn tất"}
                 </p>
-                <div className="mx-auto mt-6 h-1.5 w-full max-w-sm overflow-hidden bg-stone-100" style={{ borderRadius: 999 }}>
-                  <div className="h-full bg-stone-900 transition-all duration-300" style={{ width: `${progress}%` }} />
+                <div className="mx-auto mt-6 h-2.5 w-full max-w-sm overflow-hidden rounded-full bg-stone-100" style={{ borderRadius: 999 }}>
+                  <div className="h-full rounded-full bg-stone-900 transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
                 </div>
                 <p className="mt-2 text-sm font-medium text-stone-700">{progress}%</p>
                 <button
                   type="button"
                   onClick={() => void cancelScan()}
                   data-guide="upload-cancel"
-                  className="mt-5 inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
                 >
                   <FaStop className="text-xs" /> Huỷ quét
                 </button>
               </>
             ) : (
               <>
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-200">
                   <FaCheck className="h-5 w-5" />
                 </span>
                 <h2 className="mt-4 text-base font-semibold text-stone-900">Đã quét xong</h2>

@@ -5,7 +5,15 @@
 @theme {
   --font-sans: "Be Vietnam Pro", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "Fira Code", Consolas, Menlo, monospace;
-  --radius-card: 10px;
+  --radius-card: 14px;
+  --radius-button: 10px;
+  --radius-input: 10px;
+  --radius-badge: 999px;
+  --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 14px rgba(28, 25, 23, 0.05);
+  --shadow-card-hover: 0 4px 8px rgba(28, 25, 23, 0.06), 0 12px 28px rgba(28, 25, 23, 0.08);
+  --shadow-soft: 0 1px 3px rgba(28, 25, 23, 0.06);
+  --color-accent: #d97706;
+  --color-accent-soft: rgba(217, 119, 6, 0.12);
 }
 
 html {
@@ -14,6 +22,8 @@ html {
 }
 
 :root {
+  --heading-color: #1c1917;
+  --body-color: #262524;
   /* Màu tô đoạn giống nhau ở trang so sánh (đổi theo theme). */
   --cmp-a-strong: #86efac;
   --cmp-a-weak: #bbf7d0;
@@ -33,6 +43,8 @@ html {
 
 html.dark {
   color-scheme: dark;
+  --heading-color: #f5f5f4;
+  --body-color: #e7e5e4;
   --cmp-a-strong: rgba(16, 185, 129, 0.34);
   --cmp-a-weak: rgba(16, 185, 129, 0.2);
   --cmp-a-badge: rgba(6, 78, 59, 0.42);
@@ -49,11 +61,40 @@ html.dark {
 }
 
 body {
-  background: #f6f7f5;
-  color: #262524;
+  background: #f4f3f0;
+  color: var(--body-color);
   font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "liga", "calt", "cv02", "cv03", "cv04", "cv11";
+  background-image:
+    radial-gradient(1400px 700px at 8% -12%, rgba(217, 119, 6, 0.045), transparent 62%),
+    radial-gradient(1100px 600px at 100% 0%, rgba(28, 25, 23, 0.025), transparent 60%);
+  background-attachment: fixed;
+  letter-spacing: -0.003em;
+}
+
+/* Typography scale — Vietnamese-friendly, professional hierarchy */
+h1, h2, h3, h4 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--heading-color);
+}
+h1 { letter-spacing: -0.025em; }
+h2 { letter-spacing: -0.02em; }
+h3 { letter-spacing: -0.015em; font-weight: 600; }
+p { line-height: 1.65; }
+small, .text-xs { line-height: 1.5; }
+
+/* Monospace for code */
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "liga", "calt";
 }
 
 ::selection {
@@ -204,9 +245,9 @@ textarea {
    chuyển bề mặt sáng sang tông than chì mà không phải sửa từng trang. */
 .dark body {
   background:
-    radial-gradient(1100px 560px at 15% -10%, rgba(245, 158, 11, 0.07), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(59, 130, 246, 0.05), transparent 60%),
-    #0f0f0e;
+    radial-gradient(1200px 600px at 10% -12%, rgba(217, 119, 6, 0.06), transparent 62%),
+    radial-gradient(1000px 500px at 100% 0%, rgba(59, 130, 246, 0.04), transparent 60%),
+    #0c0b0a;
   color: #e7e5e4;
 }
 
@@ -480,6 +521,69 @@ textarea {
 }
 .dark .cm-searchMatch.cm-searchMatch-selected {
   background-color: rgba(245, 158, 11, 0.5);
+}
+
+/* ------------------------------------------------ Premium surface layer (global) */
+/* Nâng cấp tất cả card/bảng/form hiện có mà không cần sửa JSX. */
+[class*="border-stone-200"][class*="bg-white"],
+[class*="border-stone-200"][class*="bg-[#fbfbfa]"],
+[class*="border-stone-200"][class*="bg-[#fbfbf9]"],
+[class*="border-stone-200"][class*="bg-stone-50"] {
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 14px rgba(28, 25, 23, 0.05);
+  transition: box-shadow 220ms ease, transform 220ms ease, border-color 220ms ease;
+}
+[class*="border-stone-200"][class*="bg-white"]:hover,
+[class*="border-stone-200"][class*="bg-[#fbfbfa]"]:hover {
+  box-shadow: 0 4px 8px rgba(28, 25, 23, 0.06), 0 12px 28px rgba(28, 25, 23, 0.08);
+}
+
+/* Input / select / textarea premium */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+select,
+textarea {
+  border-radius: 10px;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  border-color: #d6d3d1;
+}
+
+/* Table polish */
+table thead th {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #78716c;
+}
+.dark table thead th {
+  color: #a8a29e;
+}
+table tbody tr {
+  transition: background-color 120ms ease;
+}
+table tbody tr:hover {
+  background-color: rgba(245, 158, 11, 0.04);
+}
+
+/* Card hover lift for linked cards */
+a.block:hover .border.border-stone-200.bg-white,
+a:hover > .border.border-stone-200.bg-white {
+  transform: translateY(-2px);
 }
 
 /* ------------------------------------------------ Route progress bar */

@@ -139,7 +139,7 @@ export default function SettingsMenu() {
                         ? "border-stone-900 bg-stone-900 text-white"
                         : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900"
                     }`}
-                    style={{ borderRadius: 8 }}
+                    style={{ borderRadius: 10 }}
                   >
                     <Icon size={13} />
                     {item.label}
@@ -168,7 +168,7 @@ export default function SettingsMenu() {
                       ? "border-stone-900 bg-stone-900 text-white"
                       : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900"
                   }`}
-                  style={{ borderRadius: 8 }}
+                  style={{ borderRadius: 10 }}
                 >
                   {item.label}
                 </button>

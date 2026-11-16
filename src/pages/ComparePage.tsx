@@ -184,7 +184,7 @@ function CodeEditor({
   const blankCount = scoredLines.filter((l) => l.blank).length;
 
   return (
-    <div className="overflow-hidden border border-stone-200 bg-white" style={{ borderRadius: 10 }}>
+    <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm" style={{ borderRadius: 12 }}>
       <div className="flex items-center justify-between gap-3 border-b border-stone-100 bg-stone-50 px-3 py-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">
           {side} · {scoredLines.length} dòng
@@ -426,20 +426,20 @@ export default function ComparePage() {
         type: "button" as const,
         onClick: () => setPickMode(mode),
         "aria-pressed": active,
-        className: `border px-4 py-3 text-left transition-colors ${
+        className: `rounded-xl border px-4 py-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
           active
             ? "border-stone-900 bg-stone-900 text-white"
             : "border-stone-200 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-50"
         }`,
-        style: { borderRadius: 10 },
+        style: { borderRadius: 12 },
       };
     };
 
     return (
-      <div className="space-y-5">
-        <div className="border-b border-stone-200 pb-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / So sánh</p>
-          <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
+      <div className="space-y-8">
+        <div className="border-b border-stone-200/80 pb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / So sánh</p>
+          <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
             <FaCodeCompare className="text-stone-600" /> Chọn hai bài để đối chiếu
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
@@ -470,7 +470,7 @@ export default function ComparePage() {
         </div>
 
         {pickMode === "pair" ? (
-          <section className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
+          <section className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" style={{ borderRadius: 12 }}>
             <label htmlFor="pair-select" className="mb-2 block text-sm font-semibold text-stone-900">
               Cặp bài tương đồng
             </label>
@@ -479,7 +479,7 @@ export default function ComparePage() {
                 id="pair-select"
                 value={selectedPair?.p.id ?? ""}
                 onChange={(e) => setSelPair(e.target.value)}
-                className="min-w-[320px] flex-1 rounded-md border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-stone-900 focus:outline-none"
+                className="min-w-[320px] flex-1 rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200"
               >
                 {pairOptions.map(({ p, left, right }) => (
                   <option key={p.id} value={p.id}>
@@ -491,7 +491,7 @@ export default function ComparePage() {
                 type="button"
                 disabled={!selectedPair}
                 onClick={() => selectedPair && void open(selectedPair.left, selectedPair.right)}
-                className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md disabled:opacity-40"
               >
                 <FaCodeCompare /> Xem hai bài này
               </button>
@@ -503,7 +503,7 @@ export default function ComparePage() {
             </p>
           </section>
         ) : (
-          <section className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
+          <section className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" style={{ borderRadius: 12 }}>
             <div className="grid gap-4 sm:grid-cols-2">
               {([
                 ["A", aSel, setA, bSel] as const,
@@ -534,12 +534,12 @@ export default function ComparePage() {
                           aria-selected={active}
                           disabled={disabled}
                           onClick={() => setter(s)}
-                          className={`flex w-full items-center gap-3 border px-3 py-2.5 text-left transition-colors ${
+                          className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
                             active
                               ? "border-stone-900 bg-stone-900 text-white"
                               : "border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50"
                           } ${disabled ? "cursor-not-allowed opacity-35" : ""}`}
-                          style={{ borderRadius: 8 }}
+                          style={{ borderRadius: 12 }}
                         >
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-medium">
@@ -577,7 +577,7 @@ export default function ComparePage() {
               <button
                 type="button"
                 onClick={() => void open(aSel, bSel)}
-                className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800"
+                className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
               >
                 <FaCodeCompare /> Xem hai bài này
               </button>
@@ -594,15 +594,15 @@ export default function ComparePage() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / So sánh</p>
-          <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / So sánh</p>
+          <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
             <FaCodeCompare className="text-stone-600" /> So sánh hai đoạn code
           </h1>
         </div>
-        <div className="flex items-center gap-4 border border-stone-200 bg-white px-5 py-3" style={{ borderRadius: 10 }}>
+        <div className="flex items-center gap-4 rounded-xl border border-stone-200 bg-white px-5 py-3 shadow-sm" style={{ borderRadius: 12 }}>
           <div className="text-right">
             <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Tương đồng</p>
             <p className="font-serif text-3xl font-semibold text-red-700">{currentPct}%</p>
@@ -617,19 +617,19 @@ export default function ComparePage() {
           </div>
           <button
             onClick={swap}
-            className="ml-2 inline-flex items-center gap-1.5 rounded-md border border-stone-300 px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+            className="ml-2 inline-flex items-center gap-1.5 rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-400 hover:bg-stone-50 hover:shadow-md"
           >
             <FaArrowsLeftRight /> Đảo
           </button>
           <button
             onClick={() => setView("picker")}
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-transparent px-3 py-2 text-xs font-semibold text-stone-600 transition hover:bg-stone-50 hover:text-stone-900"
           >
             <FaArrowLeft /> Đổi bài
           </button>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-transparent px-3 py-2 text-xs font-semibold text-stone-600 transition hover:bg-stone-50 hover:text-stone-900"
             title="In trang so sánh này"
           >
             <FaPrint /> In
@@ -647,15 +647,15 @@ export default function ComparePage() {
       </div>
 
       {/* Tabs cho mobile: tránh 2 cột bị ép */}
-      <div className="flex gap-1 rounded-lg border border-stone-200 bg-white p-1 lg:hidden" role="tablist" aria-label="Chọn khung code hiển thị">
+      <div className="flex gap-1 rounded-xl border border-stone-200 bg-white p-1 shadow-sm lg:hidden" role="tablist" aria-label="Chọn khung code hiển thị">
         {(["A", "B", "both"] as const).map((tab) => (
           <button
             key={tab}
             role="tab"
             aria-selected={mobileTab === tab}
             onClick={() => setMobileTab(tab)}
-            className={`flex-1 rounded-md px-3 py-2 text-xs font-semibold ${
-              mobileTab === tab ? "bg-stone-900 text-white" : "text-stone-700 hover:bg-stone-100"
+            className={`flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+              mobileTab === tab ? "bg-stone-900 text-white shadow-sm" : "text-stone-700 hover:bg-stone-100"
             }`}
           >
             {tab === "both" ? "Cả hai" : `Bài ${tab}`}
@@ -685,7 +685,7 @@ export default function ComparePage() {
         </section>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 border border-stone-200 bg-white p-4 text-xs text-stone-600" style={{ borderRadius: 10 }}>
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-stone-200 bg-white p-5 text-xs text-stone-600 shadow-sm" style={{ borderRadius: 12 }}>
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-5" style={{ background: "var(--cmp-a-strong)", borderRadius: 3 }} /> A · giống ≥90%
           {colorBlind && <span className="font-semibold">▬ nét liền</span>}
@@ -711,7 +711,7 @@ export default function ComparePage() {
       </div>
 
       {/* Bảng diff dạng chữ cho screen reader / người dùng không thấy màu */}
-      <details className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
+      <details className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 12 }}>
         <summary className="cursor-pointer text-sm font-semibold text-stone-900">Xem dạng bảng (cho trình đọc màn hình)</summary>
         <table className="mt-3 w-full border-collapse text-xs">
           <caption className="pb-2 text-left text-stone-600">Các đoạn giống nhau theo dòng (chỉ tính dòng ≥75%).</caption>

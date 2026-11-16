@@ -328,37 +328,35 @@ export default function SupportPage() {
   // ============================================
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
 
       {/* HEADER */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
-            CODEX / Hỗ trợ
-          </p>
-
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Hỗ trợ</p>
+ 
           <div className="mt-2 flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600 ring-1 ring-rose-200">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 shadow-sm ring-1 ring-rose-200">
               <FaHeart size={18} aria-hidden="true" />
             </span>
-
-            <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900">
+ 
+            <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
               Ủng hộ CODEX
             </h1>
           </div>
-
+ 
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
             Sự ủng hộ của bạn giúp CODEX duy trì hoạt động,
             cải tiến thuật toán và phát triển thêm nhiều tính năng
             hữu ích cho cộng đồng lập trình.
           </p>
         </div>
-
+ 
         <a
           href={SUPPORT_SPONSOR_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3.5 py-2 text-xs font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+          className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-stone-900"
         >
           GitHub Sponsors
           <FaExternalLinkAlt size={10} />
@@ -384,13 +382,13 @@ export default function SupportPage() {
               setPaymentMethod("sepay");
               setError("");
             }}
-            className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+            className={`flex items-center gap-3 rounded-xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 ${
               paymentMethod === "sepay"
                 ? "border-stone-900 bg-stone-50 ring-1 ring-stone-900"
                 : "border-stone-200 bg-white hover:border-stone-400"
             }`}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 shadow-sm">
               <FaQrcode size={18} />
             </span>
 
@@ -412,13 +410,13 @@ export default function SupportPage() {
               setPaymentMethod("bank");
               setError("");
             }}
-            className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+            className={`flex items-center gap-3 rounded-xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 ${
               paymentMethod === "bank"
                 ? "border-stone-900 bg-stone-50 ring-1 ring-stone-900"
                 : "border-stone-200 bg-white hover:border-stone-400"
             }`}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-100 text-stone-700 shadow-sm">
               <FaUniversity size={18} />
             </span>
 
@@ -439,9 +437,9 @@ export default function SupportPage() {
         {/* ================================== */}
 
         {paymentMethod === "sepay" && (
-          <div className="mt-5 rounded-lg border border-rose-100 bg-rose-50/50 p-4">
+          <div className="mt-5 rounded-xl border border-rose-100 bg-rose-50/50 p-4 shadow-sm">
             <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-rose-600">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-rose-600 shadow-sm">
                 <FaQrcode size={17} />
               </span>
 
@@ -476,7 +474,7 @@ export default function SupportPage() {
                       setAmount(String(preset));
                       setError("");
                     }}
-                    className={`rounded-md border px-3 py-2.5 text-xs font-semibold transition-colors ${
+                    className={`rounded-xl border px-3 py-2.5 text-xs font-semibold shadow-sm transition hover:-translate-y-0.5 ${
                       String(preset) === amount
                         ? "border-stone-900 bg-stone-900 text-white"
                         : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
@@ -499,7 +497,7 @@ export default function SupportPage() {
                   setError("");
                 }}
                 placeholder="Nhập số tiền tùy chỉnh"
-                className="mt-3 w-full rounded-md border border-stone-300 bg-white px-3 py-2.5 font-mono text-sm text-stone-900 focus:outline-2 focus:outline-stone-900"
+                className="mt-3 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 font-mono text-sm text-stone-900 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200"
               />
 
               <p className="mt-2 text-xs text-stone-500">
@@ -508,7 +506,7 @@ export default function SupportPage() {
             </div>
 
             {/* SỐ TIỀN ỦNG HỘ */}
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-rose-100 bg-white p-3">
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-rose-100 bg-white p-3 shadow-sm">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
                   Số tiền ủng hộ
@@ -540,7 +538,7 @@ export default function SupportPage() {
                   setError("");
                 }}
                 placeholder="Nhập tên người chuyển tiền"
-                className="mt-2 w-full rounded-md border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:outline-2 focus:outline-stone-900"
+                className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200"
               />
 
               <p className="mt-2 text-xs text-stone-500">
@@ -550,7 +548,7 @@ export default function SupportPage() {
             </div>
 
             {error && (
-              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 shadow-sm">
                 {error}
               </div>
             )}
@@ -583,7 +581,7 @@ export default function SupportPage() {
 
         {paymentMethod === "bank" && (
           <div className="mt-5">
-            <div className="rounded-lg border border-stone-200 bg-[#fbfbfa] p-4">
+            <div className="rounded-xl border border-stone-200 bg-[#fbfbfa] p-4 shadow-sm">
               <div className="mb-4 flex items-center gap-2">
                 <FaUniversity className="text-stone-600" />
 
@@ -610,7 +608,7 @@ export default function SupportPage() {
                   <button
                     type="button"
                     onClick={() => copyValue(row.key, row.value)}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-50"
                   >
                     {copiedKey === row.key ? (
                       <FaCheck size={11} />
@@ -626,7 +624,7 @@ export default function SupportPage() {
               ))}
             </div>
 
-            <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 shadow-sm">
               <p className="text-xs leading-relaxed text-amber-800">
                 Khi chuyển khoản thủ công, vui lòng nhập đúng
                 nội dung chuyển khoản để quản trị viên dễ dàng
@@ -660,7 +658,7 @@ export default function SupportPage() {
       </Card>
 
       {/* FOOTER */}
-      <div className="rounded-lg border border-stone-200 bg-white p-4">
+      <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <FaHeart className="mt-0.5 shrink-0 text-rose-500" />
 

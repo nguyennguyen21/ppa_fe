@@ -37,7 +37,7 @@ export function InfoTip({ label, children, className = "", side = "top" }: InfoT
           className={`absolute left-1/2 z-50 w-60 -translate-x-1/2 border border-stone-200 bg-white px-2.5 py-2 text-left text-xs font-normal leading-relaxed text-stone-700 shadow-lg ${
             side === "top" ? "bottom-full mb-2" : "top-full mt-2"
           }`}
-          style={{ borderRadius: 8 }}
+          style={{ borderRadius: 10 }}
         >
           {children}
         </span>

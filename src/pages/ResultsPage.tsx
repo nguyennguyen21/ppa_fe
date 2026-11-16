@@ -118,10 +118,10 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="border-b border-stone-200 pb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / Kết quả</p>
-        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">Kết quả quét đạo văn</h1>
+    <div className="space-y-8">
+      <div className="border-b border-stone-200/80 pb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Kết quả</p>
+        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">Kết quả quét đạo văn</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
           Danh sách bài nộp sau khi chuẩn hóa và so sánh. Chọn 2 bài bất kỳ để mở trang đối chiếu song song.
         </p>
@@ -133,8 +133,8 @@ export default function ResultsPage() {
           { k: "Cần xem lại", v: `${stats.plag} bài` },
           { k: "Tương đồng trung bình", v: `${stats.avg}%` },
         ].map((s) => (
-          <div key={s.k} className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
-            <p className="text-xs font-medium uppercase tracking-wide text-stone-600">{s.k}</p>
+          <div key={s.k} className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" style={{ borderRadius: 12 }}>
+            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">{s.k}</p>
             <p className="mt-1 font-serif text-2xl font-semibold text-stone-900">{s.v}</p>
           </div>
         ))}
@@ -142,8 +142,8 @@ export default function ResultsPage() {
 
       {/* Sticky toolbar: luôn giữ bộ lọc trong tầm mắt khi cuộn danh sách dài. */}
       <div
-        className="sticky top-14 z-20 space-y-3 border border-stone-200 bg-[#f6f7f5]/95 p-4 shadow-sm shadow-stone-900/5 backdrop-blur dark:bg-[#111110]/95"
-        style={{ borderRadius: 10 }}
+        className="sticky top-16 z-20 space-y-4 rounded-xl border border-stone-200 bg-[#f6f7f5]/95 p-5 shadow-sm backdrop-blur dark:bg-[#111110]/95"
+        style={{ borderRadius: 12 }}
       >
         <div className="flex flex-wrap items-center gap-2" data-guide="results-filter">
           {chips.map((chip) => {
@@ -182,8 +182,8 @@ export default function ResultsPage() {
                 setPage(1);
               }}
               placeholder="Tìm theo tên file, sinh viên, mã SV..."
-              className="w-full border border-stone-300 bg-white py-2.5 pl-9 pr-3 text-sm text-stone-800 focus:border-stone-900 focus:outline-none"
-              style={{ borderRadius: 7 }}
+              className="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-9 pr-3 text-sm text-stone-800 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200"
+              style={{ borderRadius: 12 }}
             />
           </div>
           <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
@@ -191,8 +191,8 @@ export default function ResultsPage() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-700"
-              style={{ borderRadius: 7 }}
+              className="rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200"
+              style={{ borderRadius: 12 }}
             >
               <option value="similarity">Tương đồng cao nhất</option>
               <option value="fileName">Tên file A–Z</option>
@@ -211,7 +211,7 @@ export default function ResultsPage() {
                 onClick={compareSelected}
                 disabled={selected.length !== 2}
                 data-guide="results-compare"
-                className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <FaCodeCompare /> So sánh
               </button>
@@ -219,7 +219,7 @@ export default function ResultsPage() {
                 type="button"
                 onClick={() => setSelected([])}
                 aria-label="Bỏ chọn tất cả"
-                className="rounded-md p-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+                className="rounded-xl p-1.5 text-stone-600 transition hover:bg-stone-100 hover:text-stone-900"
               >
                 <FaXmark size={12} />
               </button>
@@ -255,7 +255,7 @@ export default function ResultsPage() {
                   if (!isLocked) toggleSelect(s.id);
                 }
               }}
-              className={`relative flex flex-wrap cursor-pointer items-center gap-4 border transition-all duration-150 ${rowPad} ${
+              className={`relative flex flex-wrap cursor-pointer items-center gap-4 rounded-xl border shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md ${rowPad} ${
                 isSelected
                   ? "border-amber-500 bg-amber-50 shadow-[0_2px_12px_rgba(245,158,11,0.18)] ring-2 ring-amber-400/70 dark:border-amber-400 dark:bg-amber-950/40 dark:ring-amber-500/60"
                   : isLocked
@@ -264,7 +264,7 @@ export default function ResultsPage() {
                       ? "border-stone-200 bg-white opacity-75 hover:border-stone-300 hover:opacity-100"
                       : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-[0_2px_10px_rgba(0,0,0,0.06)]"
               }`}
-              style={{ borderRadius: 10 }}
+              style={{ borderRadius: 12 }}
               aria-current={isSelected ? "true" : undefined}
             >
               {/* Vạch trái báo trạng thái */}
@@ -302,7 +302,7 @@ export default function ResultsPage() {
               </div>
               <Link
                 to={`/compare?file=${encodeURIComponent(s.fileName)}`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
               >
                 <FaCodeCompare /> So sánh
               </Link>
@@ -322,7 +322,7 @@ export default function ResultsPage() {
                   setLabel("all");
                   setPage(1);
                 }}
-                className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
               >
                 Xoá bộ lọc
               </button>

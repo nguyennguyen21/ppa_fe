@@ -108,8 +108,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <div
                 key={item.id}
                 role="status"
-                className="toast-in pointer-events-auto flex w-full items-start gap-3 overflow-hidden border border-stone-200 bg-white p-3.5 shadow-lg shadow-stone-900/10"
-                style={{ borderRadius: 10 }}
+                className="toast-in pointer-events-auto flex w-full items-start gap-3 overflow-hidden border border-stone-200 bg-white p-4 shadow-xl shadow-stone-900/15 backdrop-blur"
+                style={{ borderRadius: 14 }}
               >
                 <span
                   className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1 ${tone.icon}`}

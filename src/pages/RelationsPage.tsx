@@ -516,10 +516,10 @@ export default function RelationsPage() {
     : null;
 
   return (
-    <div className="space-y-5">
-      <div className="border-b border-stone-200 pb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / Quan hệ</p>
-        <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
+    <div className="space-y-8">
+      <div className="border-b border-stone-200/80 pb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Quan hệ</p>
+        <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
           <FaChartSimple className="text-stone-600" /> Biểu đồ quan hệ bài đạo văn
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
@@ -529,7 +529,7 @@ export default function RelationsPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <section className="border border-stone-200 bg-white p-4 xl:col-span-2" style={{ borderRadius: 10 }}>
+        <section className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm xl:col-span-2" style={{ borderRadius: 12 }}>
           <div className="relative mb-3 flex flex-wrap items-center gap-3">
             <div className="flex flex-1 items-center gap-2">
               <label className="flex min-w-[220px] flex-1 items-center gap-2 text-sm text-stone-700">
@@ -562,8 +562,8 @@ export default function RelationsPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Tìm bài nộp…"
-                className="w-full border border-stone-300 bg-white py-2 pl-9 pr-3 text-sm text-stone-800 focus:border-stone-900 focus:outline-none"
-                style={{ borderRadius: 7 }}
+                className="w-full border border-stone-300 bg-white py-2 pl-9 pr-3 text-sm text-stone-800 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                style={{ borderRadius: 10 }}
               />
             </div>
             <div className="ml-auto flex flex-wrap items-center gap-1.5 text-xs text-stone-600">
@@ -571,7 +571,7 @@ export default function RelationsPage() {
                 type="button"
                 onClick={() => setShowTable((v) => !v)}
                 aria-pressed={showTable}
-                className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold ${showTable ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"}`}
+                className={`inline-flex items-center gap-1 rounded-xl border px-2 py-1 text-xs font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${showTable ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"}`}
                 title="Xem dạng bảng (dùng cho trình đọc màn hình)"
               >
                 <FaTable /> Bảng
@@ -579,7 +579,7 @@ export default function RelationsPage() {
               <button
                 type="button"
                 onClick={exportSvg}
-                className="inline-flex items-center gap-1 rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                className="inline-flex items-center gap-1 rounded-xl border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:bg-stone-50"
                 title="Xuất biểu đồ dạng SVG"
               >
                 <FaDownload /> SVG
@@ -587,7 +587,7 @@ export default function RelationsPage() {
               <button
                 type="button"
                 onClick={exportPng}
-                className="inline-flex items-center gap-1 rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                className="inline-flex items-center gap-1 rounded-xl border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:bg-stone-50"
                 title="Xuất biểu đồ dạng PNG"
               >
                 <FaImage /> PNG
@@ -596,7 +596,7 @@ export default function RelationsPage() {
                 type="button"
                 onClick={() => setShowKeyboardHelp((v) => !v)}
                 aria-expanded={showKeyboardHelp}
-                className="inline-flex items-center gap-1 rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                className="inline-flex items-center gap-1 rounded-xl border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:bg-stone-50"
                 title="Phím tắt bàn phím"
               >
                 <FaKeyboard /> Phím tắt
@@ -616,13 +616,13 @@ export default function RelationsPage() {
           </div>
 
           {showKeyboardHelp && (
-            <div className="mb-3 border border-stone-200 bg-stone-50 p-3 text-xs text-stone-700" style={{ borderRadius: 8 }} role="note" aria-label="Phím tắt bàn phím">
+            <div className="mb-3 border border-stone-200 bg-stone-50 p-3 text-xs text-stone-700" style={{ borderRadius: 10 }} role="note" aria-label="Phím tắt bàn phím">
               <strong>Phím tắt:</strong> Tab để vào biểu đồ → Mũi tên di chuyển · + / − thu phóng · 0 vừa khung · Esc bỏ chọn ·
               Tab tiếp tới từng chấm để chọn bằng Enter. Giữ Shift + mũi tên để di chuyển xa hơn.
             </div>
           )}
           {dense && (
-            <div className="mb-3 border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800" style={{ borderRadius: 8 }} role="note">
+            <div className="mb-3 border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800" style={{ borderRadius: 10 }} role="note">
               Đang ẩn nhãn nền để tránh chồng chữ (nhiều điểm). Nhấn vào một chấm hoặc dùng dạng Bảng để xem đầy đủ tên bài.
             </div>
           )}
@@ -775,7 +775,7 @@ export default function RelationsPage() {
             {hoverEdge && edgeTip && (
               <div
                 className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full border border-stone-200 bg-white px-2.5 py-2 text-xs shadow-lg"
-                style={{ left: edgeTip.left, top: edgeTip.top, borderRadius: 8 }}
+                style={{ left: edgeTip.left, top: edgeTip.top, borderRadius: 10 }}
                 role="tooltip"
               >
                 <p className="font-semibold text-stone-900">
@@ -791,7 +791,7 @@ export default function RelationsPage() {
             )}
 
             {/* Zoom controls */}
-            <div className="absolute right-3 top-3 flex flex-col overflow-hidden border border-stone-200 bg-white shadow-sm" style={{ borderRadius: 8 }}>
+            <div className="absolute right-3 top-3 flex flex-col overflow-hidden border border-stone-200 bg-white shadow-sm" style={{ borderRadius: 10 }}>
               <button
                 type="button"
                 onClick={() => setView((current) => zoomAround(current, 1.25))}
@@ -847,7 +847,7 @@ export default function RelationsPage() {
           </div>
 
           {showTable && (
-            <div className="mt-4 overflow-auto border border-stone-200" style={{ borderRadius: 8 }} role="region" aria-label="Bảng cặp tương đồng">
+            <div className="mt-4 overflow-auto border border-stone-200" style={{ borderRadius: 10 }} role="region" aria-label="Bảng cặp tương đồng">
               <table className="w-full border-collapse text-xs">
                 <caption className="p-3 text-left text-stone-600">
                   {visibleEdges.length} cặp có tương đồng ≥ {threshold}% (dạng bảng thay cho biểu đồ).
@@ -894,14 +894,14 @@ export default function RelationsPage() {
         <aside className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
             {stats.map((s) => (
-              <div key={s.k} className="border border-stone-200 bg-white p-3 text-center" style={{ borderRadius: 10 }}>
+              <div key={s.k} className="rounded-xl border border-stone-200 bg-white p-3 text-center shadow-sm" style={{ borderRadius: 12 }}>
                 <p className="font-serif text-2xl font-semibold text-stone-900">{s.v}</p>
                 <p className="mt-0.5 text-xs leading-tight text-stone-600">{s.k}</p>
               </div>
             ))}
           </div>
 
-          <div className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
+          <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" style={{ borderRadius: 12 }}>
             <h2 className="text-sm font-semibold text-stone-900">
               {activeNode ? `${activeNode.fileName} — ${activeNode.studentName}` : "Chưa chọn bài nào"}
             </h2>
@@ -920,7 +920,7 @@ export default function RelationsPage() {
                   <li key={e.id}>
                     <div
                       className="flex w-full items-center gap-3 border border-stone-200 px-3 py-2"
-                      style={{ borderRadius: 8 }}
+                      style={{ borderRadius: 10 }}
                     >
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium text-stone-800">
@@ -935,7 +935,7 @@ export default function RelationsPage() {
                       </span>
                       <Link
                         to={`/compare?a=${encodeURIComponent(activeNode.fileName)}&b=${encodeURIComponent(other.fileName)}`}
-                        className="inline-flex shrink-0 items-center gap-1 rounded-md border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                        className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
                         title="So sánh hai bài này"
                       >
                         <FaCodeCompare /> So sánh
@@ -948,7 +948,7 @@ export default function RelationsPage() {
               {activeEdges.length === 0 && (
                 <li
                   className="border border-dashed border-stone-300 px-3 py-4 text-center text-xs text-stone-600"
-                  style={{ borderRadius: 8 }}
+                  style={{ borderRadius: 10 }}
                 >
                   Bài này không còn cặp nào ở ngưỡng {threshold}% — hãy hạ ngưỡng xuống để xem thêm.
                 </li>
@@ -956,7 +956,7 @@ export default function RelationsPage() {
             </ul>
           </div>
 
-          <div className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
+          <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" style={{ borderRadius: 12 }}>
             <h2 className="text-sm font-semibold text-stone-900">Các cặp tương đồng cao nhất</h2>
             <ul className="mt-3 space-y-2">
               {pairRelations.slice(0, 6).map((p) => (

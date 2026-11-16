@@ -12,8 +12,8 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, description, action, className = "" }: EmptyStateProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-1.5 border border-dashed border-stone-300 bg-white px-6 py-10 text-center ${className}`}
-      style={{ borderRadius: 10 }}
+      className={`flex flex-col items-center justify-center gap-2 border border-dashed border-stone-300 bg-white px-6 py-12 text-center ${className}`}
+      style={{ borderRadius: 14 }}
     >
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600">
         {icon ?? <FaInbox size={17} />}
@@ -45,8 +45,8 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className={`flex flex-col items-center justify-center gap-1.5 border border-red-200 bg-red-50/60 px-6 py-10 text-center ${className}`}
-      style={{ borderRadius: 10 }}
+      className={`flex flex-col items-center justify-center gap-2 border border-red-200 bg-red-50/60 px-6 py-12 text-center ${className}`}
+      style={{ borderRadius: 14 }}
     >
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-700">
         <FaCircleExclamation size={17} />
@@ -57,7 +57,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-50"
         >
           <FaRotateRight /> {retryLabel}
         </button>

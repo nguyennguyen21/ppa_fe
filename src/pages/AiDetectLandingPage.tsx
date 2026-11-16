@@ -145,14 +145,14 @@ export default function AiDetectLandingPage() {
   }, [aiResults, samples, samplesOfKind, analyzeCode]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             CODEX / Phân loại
           </p>
-          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
             Chọn mã nguồn để phân tích
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
@@ -163,23 +163,23 @@ export default function AiDetectLandingPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             to="/ai-detect/kho-mau"
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50 hover:shadow-md"
           >
             Kho mẫu hệ thống · {sampleLibrary.length} tệp
-            <FaArrowRight className="text-xs" />
+            <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
             to="/ai-detect/cum"
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50 hover:shadow-md"
           >
             Mô hình cụm
-            <FaArrowRight className="text-xs" />
+            <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
       </div>
 
       {/* 3 options */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         {cards.map((card) => {
           const accent = accents[card.info.accent];
           const Icon = icons[card.id as SampleKind];
@@ -187,15 +187,14 @@ export default function AiDetectLandingPage() {
             <Link
               key={card.id}
               to={`/ai-detect/kho-mau?loai=${card.id}`}
-              className={`group flex h-full flex-col overflow-hidden border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-sm ${accent.border}`}
-              style={{ borderRadius: 10 }}
+              className={`group flex h-full flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${accent.border}`}
             >
-              <span className={`h-1 w-full ${accent.bar}`} />
+              <span className={`h-1.5 w-full ${accent.bar}`} />
               <div className="flex flex-1 flex-col p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <span
-                      className={`flex h-9 w-9 items-center justify-center rounded-full ring-1 ${accent.icon}`}
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl ring-1 ${accent.icon}`}
                     >
                       <Icon size={16} />
                     </span>
@@ -209,7 +208,7 @@ export default function AiDetectLandingPage() {
                     </div>
                   </div>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${accent.chip}`}
+                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${accent.chip}`}
                   >
                     {verdictLabel(card.averageAi)}
                   </span>
@@ -222,8 +221,8 @@ export default function AiDetectLandingPage() {
                   {card.info.description}
                 </p>
 
-                <div className="mt-4 overflow-hidden border border-stone-200 bg-[#fbfbfa]">
-                  <div className="flex items-center gap-1.5 border-b border-stone-100 px-3 py-1.5">
+                <div className="mt-4 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
+                  <div className="flex items-center gap-1.5 border-b border-stone-200 px-3 py-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-stone-300" />
                     <span className="h-1.5 w-1.5 rounded-full bg-stone-300" />
                     <span className="h-1.5 w-1.5 rounded-full bg-stone-300" />
@@ -282,10 +281,7 @@ export default function AiDetectLandingPage() {
       </div>
 
       {/* Custom code */}
-      <div
-        className="flex flex-wrap items-center justify-between gap-4 border border-stone-200 bg-white p-5"
-        style={{ borderRadius: 10 }}
-      >
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
         <div>
           <p className="font-serif text-lg font-semibold text-stone-900">
             Không có mẫu bạn cần?
@@ -296,7 +292,7 @@ export default function AiDetectLandingPage() {
         </div>
         <Link
           to="/ai-detect/analyze?mau=custom"
-          className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-stone-800"
+          className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
         >
           <FaFileArrowUp /> Phân tích mã của tôi
         </Link>
