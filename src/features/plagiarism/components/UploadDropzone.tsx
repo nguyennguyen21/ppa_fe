@@ -159,7 +159,7 @@ export default function UploadDropzone({ files, onFilesChange, maxSizeMB = 100 }
       >
         <input {...getInputProps()} />
         <div className="pointer-events-none flex flex-col items-center">
-          <div className="mb-4 flex h-11 w-11 items-center justify-center bg-stone-900 text-white" style={{ borderRadius: 8 }}>
+          <div className="mb-4 flex h-11 w-11 items-center justify-center bg-stone-900 text-white" style={{ borderRadius: 10 }}>
             {zipLoading ? <FaSpinner className="h-5 w-5 animate-spin" /> : <FaCloudArrowUp className="h-5 w-5" />}
           </div>
           <p className="text-sm font-semibold text-stone-800">
@@ -183,10 +183,10 @@ export default function UploadDropzone({ files, onFilesChange, maxSizeMB = 100 }
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm file theo tên..."
                 className="w-full border border-stone-300 bg-white py-2 pl-9 pr-3 text-sm text-stone-800 focus:border-stone-900 focus:outline-none"
-                style={{ borderRadius: 7 }}
+                style={{ borderRadius: 10 }}
               />
             </div>
-            <label className="flex cursor-pointer items-center gap-2 border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-700" style={{ borderRadius: 7 }}>
+            <label className="flex cursor-pointer items-center gap-2 border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-700" style={{ borderRadius: 10 }}>
               <input type="checkbox" checked={onlyZip} onChange={(e) => setOnlyZip(e.target.checked)} className="accent-stone-900" />
               Chỉ file từ zip
             </label>
@@ -204,7 +204,7 @@ export default function UploadDropzone({ files, onFilesChange, maxSizeMB = 100 }
           {/* Danh sách file theo thư mục */}
           <div className="max-h-[420px] space-y-4 overflow-auto pr-1">
             {Object.entries(groups).map(([dir, items]) => (
-              <div key={dir} className="border border-stone-200 bg-white" style={{ borderRadius: 8 }}>
+              <div key={dir} className="border border-stone-200 bg-white" style={{ borderRadius: 10 }}>
                 <div className="flex items-center gap-2 border-b border-stone-100 px-3 py-2">
                   <FaFolderTree className="text-stone-600" />
                   <span className="truncate text-xs font-semibold text-stone-700">{dir}/</span>
@@ -215,7 +215,7 @@ export default function UploadDropzone({ files, onFilesChange, maxSizeMB = 100 }
                 <ul className="divide-y divide-stone-100">
                   {items.map((f) => (
                     <li key={f.id} className="group flex items-center gap-3 px-3 py-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-stone-50 text-stone-600 ring-1 ring-stone-200" style={{ borderRadius: 7 }}>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-stone-50 text-stone-600 ring-1 ring-stone-200" style={{ borderRadius: 10 }}>
                         {f.type === "zip" ? <FaFileZipper /> : <FaFileCode />}
                       </span>
                       <button

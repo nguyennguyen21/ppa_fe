@@ -48,15 +48,15 @@ export default function InputPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative flex flex-col gap-6 animate-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4 backdrop-blur-[2px]">
+      <div className="relative flex w-full max-w-lg flex-col gap-6 rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h2 className="text-lg font-bold text-slate-800">Upload Files</h2>
+        <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+          <h2 className="text-lg font-bold text-stone-900">Upload Files</h2>
           <button
             id="baseCodeDropdown"
             type="button"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+            className="flex cursor-pointer items-center gap-1 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
           >
             <span>Base code</span>{" "}
             <i className="fa-solid fa-chevron-down text-xs"></i>
@@ -66,41 +66,41 @@ export default function InputPage() {
         {/* Drop Zone */}
         <div
           id="dropZone"
-          className="border-2 border-dashed border-purple-300 rounded-2xl p-8 flex flex-col items-center justify-center bg-purple-50/20 hover:bg-purple-50/45 transition-all relative"
+          className="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/30 p-8 transition-all hover:bg-amber-50/50"
         >
           <input
             type="file"
             ref={fileInputRef}
             id="fileInput"
             onChange={handleFileChange}
-            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-30"
+            className="absolute inset-0 z-30 h-full w-full cursor-pointer opacity-0"
           />
 
           {/* Upload Prompt */}
           {!hasFile && (
             <div
               id="uploadPrompt"
-              className="flex flex-col items-center w-full pointer-events-none"
+              className="pointer-events-none flex w-full flex-col items-center"
             >
-              <div className="flex items-center gap-3 mb-3 text-slate-400">
-                <i className="fa-solid fa-folder-closed text-3xl text-purple-400"></i>
-                <div className="w-[1px] h-8 bg-slate-200"></div>
-                <i className="fa-solid fa-file-lines text-3xl text-purple-400"></i>
+              <div className="mb-3 flex items-center gap-3 text-stone-400">
+                <i className="fa-solid fa-folder-closed text-3xl text-amber-500"></i>
+                <div className="h-8 w-[1px] bg-stone-200"></div>
+                <i className="fa-solid fa-file-lines text-3xl text-amber-500"></i>
               </div>
-              <p className="text-slate-500 text-sm font-medium mb-4 text-center">
+              <p className="mb-4 text-center text-sm font-medium text-stone-500">
                 Drag & drop documents, images, code files, folders, or zip files
                 here
               </p>
               <button
                 type="button"
                 onClick={handleChangeFile}
-                className="bg-gradient-to-r from-purple-500 to-blue-600 text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-md hover:opacity-95 active:scale-95 transition-all pointer-events-auto z-40 cursor-pointer"
+                className="pointer-events-auto z-40 cursor-pointer rounded-xl bg-stone-900 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md active:scale-95"
               >
                 Upload files or folders
               </button>
-              <p className="text-xs text-slate-400 mt-3 pointer-events-auto z-40">
+              <p className="pointer-events-auto z-40 mt-3 text-xs text-stone-400">
                 or use an{" "}
-                <a href="#" className="text-blue-600 hover:underline">
+                <a href="#" className="text-amber-600 hover:underline">
                   example folder
                 </a>
               </p>
@@ -109,26 +109,26 @@ export default function InputPage() {
 
           {/* File Info State */}
           {hasFile && (
-            <div className="flex flex-col items-center w-full z-40">
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mb-3 shadow-inner">
+            <div className="z-40 flex w-full flex-col items-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 shadow-inner">
                 <i className={`${fileIcon} text-xl`}></i>
               </div>
-              <h4 className="text-slate-800 font-semibold text-sm truncate max-w-[300px] mb-1 text-center">
+              <h4 className="mb-1 max-w-[300px] truncate text-center text-sm font-semibold text-stone-900">
                 {fileName}
               </h4>
-              <p className="text-slate-400 text-xs mb-4">{fileSize}</p>
+              <p className="mb-4 text-xs text-stone-400">{fileSize}</p>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleChangeFile}
-                  className="text-xs font-semibold px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all cursor-pointer"
+                  className="cursor-pointer rounded-lg bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-700 transition-all hover:bg-stone-200"
                 >
                   Choose another
                 </button>
                 <button
                   type="button"
                   onClick={handleRemove}
-                  className="text-xs font-semibold px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all cursor-pointer"
+                  className="cursor-pointer rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition-all hover:bg-red-100"
                 >
                   Remove
                 </button>
@@ -143,7 +143,7 @@ export default function InputPage() {
             <button
               id="publishBtn"
               type="button"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/20 transition-all tracking-wide flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-stone-900 py-3.5 text-sm font-bold tracking-wide text-white shadow-sm transition-all active:scale-[0.98] hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
             >
               <span id="publishText">PUBLISH</span>
               <i
@@ -154,16 +154,16 @@ export default function InputPage() {
 
             <div
               id="progressContainer"
-              className="hidden flex flex-col gap-1.5"
+              className="hidden flex-col gap-1.5"
             >
-              <div className="flex justify-between text-xs font-medium text-slate-500">
+              <div className="flex justify-between text-xs font-medium text-stone-500">
                 <span id="progressStatusText">Scanning items...</span>
                 <span id="progressPercent">0%</span>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-stone-100">
                 <div
                   id="progressBar"
-                  className="bg-blue-600 h-full w-0 transition-all duration-300"
+                  className="h-full w-0 bg-stone-900 transition-all duration-300"
                 ></div>
               </div>
             </div>

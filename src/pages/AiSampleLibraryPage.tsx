@@ -90,25 +90,24 @@ function SampleCard({ sample, code }: { sample: LibrarySample; code?: string }) 
   return (
     <Link
       to={`/ai-detect/analyze?mau=${sample.id}`}
-      className="group flex flex-col overflow-hidden border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-sm"
-      style={{ borderRadius: 10 }}
+      className="group flex flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md"
     >
-      <span className={`h-1 w-full ${meta.bar}`} />
+      <span className={`h-1.5 w-full ${meta.bar}`} />
       <div className="flex flex-1 flex-col p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${meta.chip}`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${meta.chip}`}
           >
             <Icon size={10} /> {meta.label}
           </span>
-          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${verdict.className}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${verdict.className}`}>
             {verdict.text}
           </span>
         </div>
 
         <div className="mt-3 flex items-start gap-2.5">
           <span
-            className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1 ${meta.iconStyle}`}
+            className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1 ${meta.iconStyle}`}
           >
             <Icon size={14} />
           </span>
@@ -126,7 +125,7 @@ function SampleCard({ sample, code }: { sample: LibrarySample; code?: string }) 
           {sample.description}
         </p>
 
-        <div className="mt-3 overflow-hidden border border-stone-200 bg-[#fbfbfa]">
+        <div className="mt-3 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
           <pre className="h-[122px] overflow-hidden px-3 py-2 font-mono text-xs leading-[1.65]">
             {preview.map((line, index) => (
               <div
@@ -256,23 +255,24 @@ export default function AiSampleLibraryPage() {
           : "Toàn bộ kho mã nguồn";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="border-b border-stone-200 pb-5">
+      <div className="border-b border-stone-200/80 pb-6">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             CODEX / Kho mẫu
           </p>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/ai-detect/cum"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 transition-colors hover:text-stone-900"
-          >
-            Mô hình cụm
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/ai-detect/cum"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50 hover:shadow-md"
+            >
+              Mô hình cụm
+              <FaArrowRight className="text-xs" />
+            </Link>
+          </div>
         </div>
-        </div>
-        <h1 className="mt-2 flex items-center gap-2.5 font-serif text-3xl font-semibold tracking-tight text-stone-900">
+        <h1 className="mt-2 flex items-center gap-2.5 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
           <FaCode className="text-stone-500" /> Kho mã nguồn hệ thống
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
@@ -291,7 +291,7 @@ export default function AiSampleLibraryPage() {
                 key={filter.id}
                 type="button"
                 onClick={() => setFilter(filter.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition hover:-translate-y-0.5 ${
                   isActive
                     ? "border-stone-900 bg-stone-900 text-white"
                     : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900"
@@ -316,26 +316,26 @@ export default function AiSampleLibraryPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Tìm theo tên tệp, tiêu đề…"
-            className="w-full rounded-md border border-stone-200 bg-white py-1.5 pl-8 pr-3 text-[12px] text-stone-800 outline-none placeholder:text-stone-500 focus:border-stone-400"
+            className="w-full rounded-xl border border-stone-200 bg-white py-2 pl-9 pr-3 text-[12px] text-stone-800 shadow-sm outline-none placeholder:text-stone-500 transition focus:border-stone-400 focus:ring-2 focus:ring-amber-200"
           />
         </label>
       </div>
 
-      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-stone-200 pb-3">
+      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-stone-200/80 pb-3">
         <h2 className="font-serif text-xl font-semibold tracking-tight text-stone-900">{heading}</h2>
         <p className="text-xs text-stone-600">
           {visible.length} / {counts.all} tệp
         </p>
       </div>
 
-          {visible.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
+      {visible.length > 0 ? (
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-2">
           {visible.map((sample) => (
             <SampleCard key={sample.id} sample={sample} code={sample.id.startsWith("be:") ? beCodes[sample.id] : undefined} />
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-2 border border-dashed border-stone-300 bg-white px-6 py-14 text-center">
+        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center shadow-sm">
           <FaMagnifyingGlass className="text-stone-300" size={20} />
           <p className="text-sm font-medium text-stone-700">Không tìm thấy tệp phù hợp</p>
           <p className="max-w-sm text-xs leading-relaxed text-stone-600">

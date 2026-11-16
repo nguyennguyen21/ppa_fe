@@ -141,23 +141,21 @@ export default function AiClusterPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="relative overflow-hidden border-b border-stone-200 pb-6">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-amber-200/40 via-sky-200/30 to-violet-200/40 blur-3xl" />
-        <div className="relative flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
+      <div className="border-b border-stone-200/80 pb-6">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             CODEX / Mô hình cụm
           </p>
-
         </div>
-        <h1 className="relative mt-2 flex items-center gap-3 font-serif text-4xl font-semibold tracking-tight text-stone-900">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-sky-500 to-violet-500 text-white shadow-lg shadow-amber-500/20">
+        <h1 className="mt-2 flex items-center gap-3 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm">
             <FaCircleNodes size={22} />
           </span>
           Bản đồ cụm AI và người viết
         </h1>
-        <p className="relative mt-3 max-w-3xl text-sm leading-relaxed text-stone-600">
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-600">
           {effectiveSamples.length} bài mẫu được biểu diễn bằng 10 chỉ số tĩnh, sau đó được chuẩn
           hoá và chiếu xuống mặt phẳng bằng PCA. k-means ghép các bài gần nhau thành các cụm; mạng
           láng giềng gần nhất cho thấy bài nào kéo bài nào đi theo.
@@ -165,9 +163,8 @@ export default function AiClusterPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="relative overflow-hidden border border-stone-200 bg-white px-4 py-4 shadow-sm" style={{ borderRadius: 12 }}>
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-amber-100/60 blur-2xl" />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-stone-200 bg-white px-4 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
             Mẫu được phân tích
           </p>
@@ -176,8 +173,7 @@ export default function AiClusterPage() {
           </p>
           <p className="mt-0.5 text-xs text-stone-600">4 AI · 4 người viết · 4 hỗn hợp</p>
         </div>
-        <div className="relative overflow-hidden border border-stone-200 bg-white px-4 py-4 shadow-sm" style={{ borderRadius: 12 }}>
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-sky-100/60 blur-2xl" />
+        <div className="rounded-xl border border-stone-200 bg-white px-4 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
             Số cụm
           </p>
@@ -186,8 +182,7 @@ export default function AiClusterPage() {
             k-means trên 10 chỉ số · silhouette {model.silhouette.toFixed(2)}
           </p>
         </div>
-        <div className="relative overflow-hidden border border-stone-200 bg-white px-4 py-4 shadow-sm" style={{ borderRadius: 12 }}>
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-violet-100/60 blur-2xl" />
+        <div className="rounded-xl border border-stone-200 bg-white px-4 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
             Phương sai giải thích
           </p>
@@ -201,7 +196,7 @@ export default function AiClusterPage() {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border border-stone-200 bg-white px-5 py-3.5 shadow-sm" style={{ borderRadius: 12 }}>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white px-5 py-3.5 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
             Số cụm
@@ -264,7 +259,7 @@ export default function AiClusterPage() {
 
       {/* Scatter + cluster panel */}
       <div className="grid gap-5 min-[1150px]:grid-cols-[minmax(0,1.4fr)_340px]">
-        <section className="overflow-hidden border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 14 }}>
+        <section className="overflow-hidden rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
             <div>
               <h2 className="font-serif text-lg font-semibold text-stone-900">
@@ -481,7 +476,7 @@ export default function AiClusterPage() {
         </section>
 
         <aside className="flex min-w-0 flex-col gap-4">
-          <section className="overflow-hidden border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 14 }}>
+          <section className="overflow-hidden rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
             <h2 className="font-serif text-base font-semibold text-stone-900">Cấu trúc cụm</h2>
             <p className="mt-0.5 text-xs text-stone-600">
               Bấm một cụm để làm nổi bật thành viên của nó.
@@ -492,10 +487,9 @@ export default function AiClusterPage() {
                 return (
                   <div
                     key={group.id}
-                    className={`border px-3 py-3 shadow-sm transition-all ${
+                    className={`rounded-xl border px-3 py-3 shadow-sm transition-all ${
                       isActive ? "border-stone-900 bg-stone-50" : "border-stone-200 bg-white hover:border-stone-300"
                     }`}
-                    style={{ borderRadius: 10 }}
                   >
                     <button
                       type="button"
@@ -551,7 +545,7 @@ export default function AiClusterPage() {
             </div>
           </section>
 
-          <section className="overflow-hidden border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 14 }}>
+          <section className="overflow-hidden rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
             <h2 className="font-serif text-base font-semibold text-stone-900">
               {selectedPoint ? "Bài đang chọn" : "Chọn một điểm"}
             </h2>
@@ -593,7 +587,7 @@ export default function AiClusterPage() {
                 </dl>
                 <Link
                   to={`/ai-detect/analyze?mau=${selectedPoint.sample.id}`}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
                 >
                   <FaMagnifyingGlassChart /> Mở phân tích
                 </Link>
@@ -609,7 +603,7 @@ export default function AiClusterPage() {
       </div>
 
       {/* Graph network */}
-      <section className="overflow-hidden border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 14 }}>
+      <section className="overflow-hidden rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
           <div>
             <h2 className="flex items-center gap-2 font-serif text-lg font-semibold text-stone-900">
@@ -704,7 +698,7 @@ export default function AiClusterPage() {
       </section>
 
       {/* Explainability */}
-      <section className="border border-stone-200 bg-white p-5" style={{ borderRadius: 10 }}>
+      <section className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
             <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-stone-900">
@@ -733,7 +727,7 @@ export default function AiClusterPage() {
                       <span className="w-32 shrink-0 truncate text-xs text-stone-600">
                         {item.label}
                       </span>
-                      <div className="relative h-2 flex-1 bg-stone-100">
+                      <div className="relative h-2 flex-1 rounded-full bg-stone-100">
                         <span className="absolute left-1/2 top-0 h-full w-px bg-stone-300" />
                         <span
                           className={`absolute top-0 h-full ${

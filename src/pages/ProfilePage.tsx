@@ -132,20 +132,20 @@ export default function ProfilePage() {
   };
 
   const field =
-    "w-full border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-stone-900 focus:outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100";
+    "w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100";
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-stone-200 pb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600 dark:text-stone-400">
-          CODEX / Hồ sơ
-        </p>
-        <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
-          <FaCircleUser className="text-stone-500" /> Hồ sơ giảng viên
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600 dark:text-stone-400">
-          Quản lý thông tin giảng viên, đổi mật khẩu và rà soát lịch sử các đợt quét gần nhất.
-        </p>
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Hồ sơ</p>
+          <h1 className="mt-2 flex items-center gap-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl dark:text-stone-100">
+            <FaCircleUser className="text-stone-500" /> Hồ sơ giảng viên
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+            Quản lý thông tin giảng viên, đổi mật khẩu và rà soát lịch sử các đợt quét gần nhất.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
@@ -153,7 +153,7 @@ export default function ProfilePage() {
         <Card className="xl:col-span-2">
           <CardTitle>Thông tin chung</CardTitle>
           <div className="mt-4 flex flex-wrap items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-stone-900 text-xl font-bold text-white dark:bg-amber-400 dark:text-stone-900">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-stone-900 text-xl font-bold text-white shadow-sm ring-1 ring-stone-900 dark:bg-amber-400 dark:text-stone-900">
               {initials(form.displayName)}
             </span>
             <div className="min-w-0 flex-1">
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                 value={form.displayName}
                 onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
                 className={field}
-                style={{ borderRadius: 7 }}
+
                 autoComplete="name"
               />
             </label>
@@ -186,7 +186,7 @@ export default function ProfilePage() {
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 className={field}
-                style={{ borderRadius: 7 }}
+
                 type="email"
                 autoComplete="email"
               />
@@ -197,7 +197,7 @@ export default function ProfilePage() {
                 value={form.department}
                 onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
                 className={field}
-                style={{ borderRadius: 7 }}
+
               />
             </label>
             <label className="block">
@@ -206,7 +206,7 @@ export default function ProfilePage() {
                 value={form.role}
                 onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
                 className={field}
-                style={{ borderRadius: 7 }}
+
               >
                 <option>Giảng viên</option>
                 <option>Trợ giảng</option>
@@ -221,7 +221,7 @@ export default function ProfilePage() {
                 value={form.bio}
                 onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
                 className={field}
-                style={{ borderRadius: 7 }}
+
                 rows={3}
                 placeholder="Ví dụ: phụ trách lớp CTK46, môn Lập trình nâng cao…"
               />
@@ -243,7 +243,7 @@ export default function ProfilePage() {
                   value={currentPw}
                   onChange={(e) => setCurrentPw(e.target.value)}
                   className={field}
-                  style={{ borderRadius: 7 }}
+  
                   autoComplete="current-password"
                 />
               </label>
@@ -254,7 +254,7 @@ export default function ProfilePage() {
                   value={nextPw}
                   onChange={(e) => setNextPw(e.target.value)}
                   className={field}
-                  style={{ borderRadius: 7 }}
+  
                   autoComplete="new-password"
                 />
               </label>
@@ -265,7 +265,7 @@ export default function ProfilePage() {
                   value={confirmPw}
                   onChange={(e) => setConfirmPw(e.target.value)}
                   className={field}
-                  style={{ borderRadius: 7 }}
+  
                   autoComplete="new-password"
                 />
               </label>
@@ -304,7 +304,7 @@ export default function ProfilePage() {
               onChange={(e) => setHistoryQuery(e.target.value)}
               placeholder="Tìm file / sinh viên…"
               className={`${field} pl-9 py-2`}
-              style={{ borderRadius: 7 }}
+              style={{ borderRadius: 10 }}
               aria-label="Tìm trong lịch sử quét"
             />
           </div>
@@ -312,7 +312,7 @@ export default function ProfilePage() {
           {history.length > 0 ? (
             <ul className="mt-4 space-y-3">
               {history.slice(0, 8).map((s) => (
-                <li key={s.id} className="flex items-center gap-3 border-b border-stone-100 pb-3 last:border-0 last:pb-0 dark:border-stone-700">
+                <li key={s.id} className="flex items-center gap-3 border-b border-stone-100 pb-3 transition last:border-0 last:pb-0 hover:bg-stone-50/60 dark:border-stone-700 dark:hover:bg-stone-800/40">
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${
                       s.label === "plagiarism"
@@ -330,7 +330,7 @@ export default function ProfilePage() {
                   </span>
                   <Link
                     to={`/compare?file=${encodeURIComponent(s.fileName)}`}
-                    className="shrink-0 text-xs font-semibold text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
+                    className="shrink-0 text-xs font-semibold text-stone-700 transition hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
                   >
                     Xem <FaArrowRight className="inline text-[10px]" />
                   </Link>

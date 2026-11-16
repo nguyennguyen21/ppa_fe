@@ -295,7 +295,7 @@ export default function DetectPage() {
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 px-4 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <FaCode className="text-stone-500" />
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-600">
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
           Mã nguồn
         </span>
         <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600">
@@ -345,11 +345,11 @@ export default function DetectPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="border-b border-stone-200 pb-5">
+      <div className="border-b border-stone-200/80 pb-6">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             CODEX / Phân loại
           </p>
         <div className="flex items-center gap-2">
@@ -379,8 +379,8 @@ export default function DetectPage() {
       {/* Code + verdict */}
       <div className="grid gap-5 min-[1150px]:grid-cols-[minmax(0,1fr)_360px]">
         <section
-          className="flex min-w-0 flex-col border border-stone-200 bg-white"
-          style={{ borderRadius: 10 }}
+          className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
+          style={{ borderRadius: 12 }}
         >
           {codeHeader}
 
@@ -470,14 +470,14 @@ export default function DetectPage() {
                 <button
                   type="button"
                   onClick={() => loadSample("ai")}
-                  className="rounded-md bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+                  className="rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800"
                 >
                   Dùng mẫu AI
                 </button>
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                  className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
                 >
                   Nạp file
                 </button>
@@ -509,7 +509,7 @@ export default function DetectPage() {
                 onClick={() => setEditing((value) => !value)}
                 data-guide="detect-edit"
                 aria-pressed={editing}
-                className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold ${
+                className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold shadow-sm transition ${
                   editing
                     ? "border-stone-900 bg-stone-900 text-white hover:bg-stone-800"
                     : "border-stone-300 bg-white text-stone-600 hover:bg-stone-50"
@@ -523,7 +523,7 @@ export default function DetectPage() {
                   type="button"
                   onClick={() => void clearCode()}
                   data-guide="detect-clear"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
                 >
                   <FaXmark /> Xóa nội dung
                 </button>
@@ -534,11 +534,11 @@ export default function DetectPage() {
 
         {/* Verdict */}
         <aside
-          className="flex min-w-0 flex-col border border-stone-200 bg-white p-5"
-          style={{ borderRadius: 10 }}
+          className="flex min-w-0 flex-col rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+          style={{ borderRadius: 12 }}
         >
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
               Kết quả phân loại
             </p>
             <span className="flex items-center gap-1.5 text-xs text-stone-500">
@@ -649,7 +649,7 @@ export default function DetectPage() {
           </div>
 
           {analysis.notes.length > 0 && (
-            <div className="mt-4 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs leading-relaxed text-stone-600">
+            <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs leading-relaxed text-stone-600 shadow-sm">
               {analysis.notes.map((note) => (
                 <p key={note}>{note}</p>
               ))}
@@ -666,8 +666,8 @@ export default function DetectPage() {
       {/* Line explanation */}
       <section
         ref={panelRef}
-        className="scroll-mt-20 border border-stone-200 bg-white"
-        style={{ borderRadius: 10 }}
+        className="scroll-mt-20 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
+        style={{ borderRadius: 12 }}
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 px-5 py-3.5">
           <div className="flex flex-wrap items-center gap-2">
@@ -701,7 +701,7 @@ export default function DetectPage() {
         {currentInsight ? (
           <div className="space-y-4 p-5">
             <pre
-              className={`overflow-auto border px-3 py-2 font-mono text-[12px] leading-[20px] text-stone-800 ${toneMeta[currentInsight.tone].code}`}
+              className={`overflow-auto rounded-xl border px-3 py-2 font-mono text-[12px] leading-[20px] text-stone-800 shadow-sm ${toneMeta[currentInsight.tone].code}`}
             >
               {lines[currentInsight.line - 1] || " "}
             </pre>
@@ -713,7 +713,7 @@ export default function DetectPage() {
                 {currentInsight.signals.map((signal, index) => (
                   <div
                     key={`${signal.label}-${index}`}
-                    className="flex items-start gap-2.5 border border-stone-100 bg-stone-50/60 px-3 py-2"
+                    className="flex items-start gap-2.5 rounded-xl border border-stone-100 bg-stone-50/60 px-3 py-2 shadow-sm transition hover:-translate-y-0.5"
                   >
                     <span
                       className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
@@ -772,7 +772,7 @@ export default function DetectPage() {
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-200 pb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
               Hồ sơ chỉ số
             </p>
             <h2 className="mt-1.5 font-serif text-2xl font-semibold tracking-tight text-stone-900">
@@ -788,8 +788,8 @@ export default function DetectPage() {
             return (
               <section
                 key={group.id}
-                className="border border-stone-200 bg-white p-4"
-                style={{ borderRadius: 10 }}
+                className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderRadius: 12 }}
               >
                 <button
                   type="button"
@@ -802,7 +802,7 @@ export default function DetectPage() {
                     <span className="block text-[13px] font-semibold text-stone-900">{group.title}</span>
                     <span className="mt-0.5 block text-xs text-stone-600">{group.subtitle}</span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-2 text-xs uppercase tracking-wide text-stone-600">
+                  <span className="flex shrink-0 items-center gap-2 text-xs uppercase tracking-wide text-stone-500">
                     {group.items.length} chỉ số
                     <FaChevronDown
                       size={10}
@@ -835,7 +835,7 @@ export default function DetectPage() {
       </section>
 
       {/* Scoring */}
-      <section className="border border-stone-200 bg-white p-5" style={{ borderRadius: 10 }}>
+      <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm" style={{ borderRadius: 12 }}>
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
             <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-stone-900">

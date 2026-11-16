@@ -28,7 +28,7 @@ function DashboardDonut({ plag, suspicious, innocent }: { plag: number; suspicio
   const pctPlag = total > 0 ? plag / total : 0;
   const pctSusp = total > 0 ? suspicious / total : 0;
   return (
-    <div className="border border-stone-200 bg-white p-5" style={{ borderRadius: 10 }}>
+    <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm" style={{ borderRadius: 12 }}>
       <h3 className="text-sm font-semibold text-stone-900">Phân bố mức độ</h3>
       <p className="mt-1 text-xs text-stone-600">Tỉ lệ nhãn sau đợt quét câu lạc bộ mẫu.</p>
       <div className="mt-4 flex items-center gap-6">
@@ -63,15 +63,15 @@ function DashboardBuckets({ submissions }: { submissions: Submission[] }) {
   ];
   const max = Math.max(1, ...buckets.map((b) => b.count));
   return (
-    <div className="border border-stone-200 bg-white p-5" style={{ borderRadius: 10 }}>
+    <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm" style={{ borderRadius: 12 }}>
       <h3 className="text-sm font-semibold text-stone-900">Phân bố theo độ tương đồng</h3>
       <p className="mt-1 text-xs text-stone-600">Số bài trong từng khoảng %.</p>
       <div className="mt-4 space-y-3">
         {buckets.map((b) => (
           <div key={b.label}>
             <div className="flex justify-between text-xs text-stone-600"><span>{b.label}</span><strong className="text-stone-900">{b.count}</strong></div>
-            <div className="mt-1 h-2.5 overflow-hidden bg-stone-100" style={{ borderRadius: 999 }} role="img" aria-label={`${b.label}: ${b.count} bài`}>
-              <div className={`h-full ${b.bar} transition-all`} style={{ width: `${(b.count / max) * 100}%` }} />
+            <div className="mt-1.5 h-3 overflow-hidden rounded-full bg-stone-100" style={{ borderRadius: 999 }} role="img" aria-label={`${b.label}: ${b.count} bài`}>
+              <div className={`h-full ${b.bar} transition-all duration-500 ease-out`} style={{ width: `${(b.count / max) * 100}%` }} />
             </div>
           </div>
         ))}
@@ -265,13 +265,13 @@ function AiStatsSection() {
   };
 
   const selectClass =
-    "rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 focus:border-stone-900 focus:outline-none";
+    "rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200";
 
   return (
-    <section className="border border-stone-200 bg-white p-5" style={{ borderRadius: 10 }} aria-labelledby="ai-stats-title">
+    <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm" style={{ borderRadius: 12 }} aria-labelledby="ai-stats-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 id="ai-stats-title" className="flex items-center gap-2 text-base font-semibold text-stone-900">
+          <h2 id="ai-stats-title" className="flex items-center gap-2.5 text-lg font-semibold text-stone-900">
             <FaRobot className="text-stone-500" /> Thống kê AI / người viết
           </h2>
           <p className="mt-1 max-w-2xl text-xs leading-relaxed text-stone-600">
@@ -283,14 +283,14 @@ function AiStatsSection() {
           <button
             type="button"
             onClick={() => void handleAiExcel()}
-            className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
             title="Xuất danh sách tệp AI đang lọc ra Excel"
           >
             <FaDownload /> Xuất Excel
           </button>
           <Link
             to="/ai-detect/kho-mau"
-            className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
           >
             Mở kho mẫu AI <FaArrowRight className="text-xs" />
           </Link>
@@ -299,22 +299,22 @@ function AiStatsSection() {
 
       {/* Thẻ tóm tắt AI — tông đen/trắng trực quan */}
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="border border-stone-200 bg-white p-4" style={{ borderRadius: 10 }}>
+        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm" style={{ borderRadius: 12 }}>
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Tổng tệp mẫu</p>
           <p className="mt-1 font-serif text-2xl font-semibold text-stone-900">{summary.total} tệp</p>
           <p className="mt-1 text-xs text-stone-600">Trong kho {stats.length} tệp đang lọc</p>
         </div>
-        <div className="border border-stone-900 bg-stone-900 p-4" style={{ borderRadius: 10 }}>
+        <div className="rounded-xl border border-stone-900 bg-stone-900 p-5 shadow-sm" style={{ borderRadius: 12 }}>
           <p className="text-xs font-semibold uppercase tracking-wide text-white">AI tạo — nền đen</p>
           <p className="mt-1 font-serif text-2xl font-semibold text-white">{summary.ai} tệp</p>
           <p className="mt-1 text-xs text-stone-300">Xác suất AI TB {summary.avgAi}%</p>
         </div>
-        <div className="border-2 border-stone-900 bg-white p-4" style={{ borderRadius: 10 }}>
+        <div className="rounded-xl border-2 border-stone-900 bg-white p-5 shadow-sm" style={{ borderRadius: 12 }}>
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-900">Người viết — nền trắng viền đen</p>
           <p className="mt-1 font-serif text-2xl font-semibold text-stone-900">{summary.human} tệp</p>
           <p className="mt-1 text-xs text-stone-600">Chưa rõ {summary.unclear} tệp</p>
         </div>
-        <div className="border border-stone-200 bg-stone-50 p-4" style={{ borderRadius: 10 }}>
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 shadow-sm" style={{ borderRadius: 12 }}>
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Độ chắc chắn TB</p>
           <p className="mt-1 font-serif text-2xl font-semibold text-stone-900">{summary.avgConfidence}%</p>
           <p className="mt-1 text-xs text-stone-600">Trung bình của các tệp đang hiện</p>
@@ -382,7 +382,7 @@ function AiStatsSection() {
                 const v = Number(e.target.value);
                 if (Number.isFinite(v)) setMinAi(Math.max(0, Math.min(100, v)));
               }}
-              className="w-20 rounded-md border border-stone-300 bg-white px-2 py-1.5 text-center text-sm font-semibold text-stone-900 focus:border-stone-900 focus:outline-none"
+              className="w-20 rounded-xl border border-stone-200 bg-white px-2 py-1.5 text-center text-sm font-semibold text-stone-900 shadow-sm transition focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-200"
               aria-label="Ngưỡng AI tối thiểu (số)"
             />
           </div>
@@ -390,7 +390,7 @@ function AiStatsSection() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-xl border border-stone-900 bg-white p-3" role="status" aria-live="polite">
+      <div className="mt-5 rounded-xl border border-stone-900 bg-white p-4 shadow-sm" role="status" aria-live="polite">
         <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Kết quả đang lọc — đen = AI, trắng viền đen = Người, xám = Chưa rõ</p>
         <div className="mt-2 flex flex-wrap gap-2">
         <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700 ring-1 ring-stone-300">
@@ -418,7 +418,7 @@ function AiStatsSection() {
               setMinAi(0);
               setSort("newest");
             }}
-            className="rounded-full border border-stone-900 bg-white px-3 py-1 text-xs font-semibold text-stone-900 hover:bg-stone-900 hover:text-white"
+            className="rounded-full border border-stone-900 bg-white px-3 py-1 text-xs font-semibold text-stone-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-900 hover:text-white"
           >
             Xoá bộ lọc
           </button>
@@ -429,7 +429,7 @@ function AiStatsSection() {
       {filtered.length > 0 ? (
         <>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex gap-1 rounded-lg border border-stone-200 bg-stone-50 p-1" role="group" aria-label="Chế độ xem danh sách AI">
+            <div className="flex gap-1 rounded-xl border border-stone-200 bg-stone-50 p-1 shadow-sm" role="group" aria-label="Chế độ xem danh sách AI">
               {(
                 [
                   { id: "bars" as const, label: "Thanh", icon: FaChartSimple },
@@ -444,7 +444,7 @@ function AiStatsSection() {
                     type="button"
                     onClick={() => setView(item.id)}
                     aria-pressed={active}
-                    className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold ${
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
                       active ? "bg-stone-900 text-white" : "text-stone-700 hover:bg-white"
                     }`}
                   >
@@ -486,8 +486,8 @@ function AiStatsSection() {
                   {aiBuckets.map((bucket) => (
                     <div key={bucket.label}>
                       <div className="flex justify-between text-xs text-stone-600"><span>{bucket.label}</span><strong className="text-stone-900">{bucket.count}</strong></div>
-                      <div className="mt-1 h-2 overflow-hidden bg-stone-100" style={{ borderRadius: 999 }}>
-                        <div className={`h-full ${bucket.bar}`} style={{ width: `${bucket.width}%` }} />
+                      <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-stone-100" style={{ borderRadius: 999 }}>
+                        <div className={`h-full ${bucket.bar} transition-all duration-500 ease-out`} style={{ width: `${bucket.width}%` }} />
                       </div>
                     </div>
                   ))}
@@ -511,9 +511,9 @@ function AiStatsSection() {
                     <span className="ml-2 font-sans font-normal text-stone-500">· {item.sample.className} · {item.sample.uploadedAt}</span>
                   </Link>
                   <span className="hidden w-28 sm:block">
-                    <span className="block h-2 overflow-hidden bg-stone-100 ring-1 ring-stone-200" style={{ borderRadius: 999 }} role="img" aria-label={`Xác suất AI ${Math.round(item.aiProbability * 100)}%`}>
+                    <span className="block h-2.5 overflow-hidden rounded-full bg-stone-100 ring-1 ring-stone-200" style={{ borderRadius: 999 }} role="img" aria-label={`Xác suất AI ${Math.round(item.aiProbability * 100)}%`}>
                       <span
-                        className={`block h-full ${item.verdict === "ai" ? "bg-stone-900" : item.verdict === "human" ? "bg-white ring-1 ring-stone-900" : "bg-stone-400"}`}
+                        className={`block h-full ${item.verdict === "ai" ? "bg-stone-900" : item.verdict === "human" ? "bg-white ring-1 ring-stone-900" : "bg-stone-400"} transition-all duration-500 ease-out`}
                         style={{ width: `${Math.round(item.aiProbability * 100)}%` }}
                       />
                     </span>
@@ -525,7 +525,7 @@ function AiStatsSection() {
               ))}
               </div>
             ) : (
-              <div className="overflow-auto border border-stone-200" style={{ borderRadius: 8 }}>
+              <div className="overflow-auto border border-stone-200" style={{ borderRadius: 10 }}>
                 <table className="w-full min-w-[720px] border-collapse text-xs">
                   <caption className="p-3 text-left text-stone-600">Bảng chi tiết thống kê AI của {summary.total} tệp đang lọc.</caption>
                   <thead>
@@ -573,7 +573,7 @@ function AiStatsSection() {
               <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Tín hiệu nổi bật trong các tệp đang lọc</p>
               <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
                 {topSignals.map((signal) => (
-                  <div key={signal.label} className={`border px-3 py-2 ${signal.weight > 0 ? "border-stone-900 bg-stone-900" : "border-stone-300 bg-white"}`} style={{ borderRadius: 8 }}>
+                  <div key={signal.label} className={`border px-3 py-2 ${signal.weight > 0 ? "border-stone-900 bg-stone-900" : "border-stone-300 bg-white"}`} style={{ borderRadius: 10 }}>
                     <p className={`truncate text-xs font-semibold ${signal.weight > 0 ? "text-white" : "text-stone-800"}`} title={signal.label}>{signal.label}</p>
                     <p className={`mt-1 text-xs ${signal.weight > 0 ? "text-stone-300" : "text-stone-600"}`}>Xuất hiện {signal.count} lần</p>
                     <p className={`mt-1 text-xs font-bold ${signal.weight > 0 ? "text-white" : "text-stone-900"}`}>
@@ -599,7 +599,7 @@ function AiStatsSection() {
                   setVerdictFilter("all");
                   setMinAi(0);
                 }}
-                className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
               >
                 Xoá bộ lọc
               </button>
@@ -761,12 +761,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-5">
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">CODEX / Tổng quan</p>
-          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900">Tổng quan đợt quét</h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">CODEX / Tổng quan</p>
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl">Tổng quan đợt quét</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
             Theo dõi số bài nộp, mức tương đồng cao nhất và các nhóm bài cần xem lại trước khi chấm.
           </p>
         </div>
@@ -774,13 +774,13 @@ export default function Dashboard() {
           <ExportButtons onExcel={handleExcel} onPdf={handlePdf} />
           <Link
             to="/upload"
-            className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-stone-800"
+            className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
           >
             <FaUpload /> Nạp bài nộp
           </Link>
           <Link
             to="/compare"
-            className="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
           >
             <FaCodeCompare /> So sánh
           </Link>
@@ -798,12 +798,12 @@ export default function Dashboard() {
           type="button"
           onClick={() => setStatsMode("plagiarism")}
           aria-pressed={statsMode === "plagiarism"}
-          className={`border p-4 text-left transition ${
+          className={`rounded-xl border p-5 text-left shadow-sm transition hover:-translate-y-0.5 ${
             statsMode === "plagiarism"
-              ? "border-stone-900 bg-stone-900 text-white shadow-sm"
+              ? "border-stone-900 bg-stone-900 text-white"
               : "border-stone-200 bg-white text-stone-800 hover:border-stone-300"
           }`}
-          style={{ borderRadius: 10 }}
+          style={{ borderRadius: 12 }}
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
             <FaFileLines size={14} /> Thống kê đạo văn
@@ -816,12 +816,12 @@ export default function Dashboard() {
           type="button"
           onClick={() => setStatsMode("ai")}
           aria-pressed={statsMode === "ai"}
-          className={`border p-4 text-left transition ${
+          className={`rounded-xl border p-5 text-left shadow-sm transition hover:-translate-y-0.5 ${
             statsMode === "ai"
-              ? "border-2 border-stone-900 bg-white text-stone-900 shadow-sm"
+              ? "border-2 border-stone-900 bg-white text-stone-900"
               : "border-stone-200 bg-white text-stone-800 hover:border-stone-900"
           }`}
-          style={{ borderRadius: 10 }}
+          style={{ borderRadius: 12 }}
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
             <span className={`flex h-6 w-6 items-center justify-center rounded-full ${statsMode === "ai" ? "bg-stone-900 text-white" : "bg-stone-900 text-white"}`}>
@@ -847,7 +847,7 @@ export default function Dashboard() {
               { to: "/ai-detect/cum", title: "Mô hình cụm", desc: "Xem cụm mẫu để hiểu xu hướng viết của từng nhóm." },
               { to: "/ai-detect/analyze?mau=custom", title: "Phân tích mã của tôi", desc: "Nạp file hoặc dán code để chấm ngay trên trình duyệt." },
             ].map((c) => (
-              <Link key={c.to} to={c.to} className="group border border-stone-200 bg-white p-5 transition hover:border-stone-900" style={{ borderRadius: 10 }}>
+              <Link key={c.to} to={c.to} className="group rounded-xl border border-stone-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-900 hover:shadow-md" style={{ borderRadius: 12 }}>
                 <h3 className="font-semibold text-stone-900">{c.title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{c.desc}</p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-stone-900">
@@ -891,7 +891,7 @@ export default function Dashboard() {
             onViewAllClick={() => navigate("/relations")}
             onClusterClick={() => navigate("/relations")}
           />
-          <div className="border border-stone-200 bg-white p-5" style={{ borderRadius: 10 }}>
+          <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm" style={{ borderRadius: 12 }}>
             <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-900">
               <FaClock className="text-stone-500" /> Hoạt động gần đây
             </h3>
@@ -916,7 +916,7 @@ export default function Dashboard() {
           { to: "/compare", title: "So sánh hai đoạn code", desc: "Đối chiếu trực tiếp và xem chỗ giống, chỗ khác." },
           { to: "/results", title: "Xem kết quả chi tiết", desc: "Lọc theo nhãn, tìm kiếm và sắp xếp theo mức tương đồng." },
         ].map((c) => (
-          <Link key={c.to} to={c.to} className="group border border-stone-200 bg-white p-5 transition hover:border-stone-300" style={{ borderRadius: 10 }}>
+          <Link key={c.to} to={c.to} className="group rounded-xl border border-stone-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md" style={{ borderRadius: 12 }}>
             <h3 className="font-semibold text-stone-900">{c.title}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{c.desc}</p>
             <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-stone-900">

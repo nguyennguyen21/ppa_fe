@@ -39,21 +39,21 @@ const Navbar = ({ children }: NavbarProps) => {
   return (
     <div className="min-h-screen">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-[#f6f7f5]/90 backdrop-blur dark:border-stone-800 dark:bg-[#151413]/90">
-        <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-stone-200/60 bg-white/80 backdrop-blur-xl shadow-[0_1px_0_rgba(28,25,23,0.04)] dark:border-stone-800 dark:bg-[#151413]/80">
+        <div className="flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
           <SwitchButton
             checked={isMenuOpen}
             onChange={setMenuOpen}
             ariaLabel={isMenuOpen ? "Đóng thanh điều hướng" : "Mở thanh điều hướng"}
           />
 
-          <Link to="/dashboard" className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-stone-900 text-[13px] font-bold tracking-tight text-white">
+          <Link to="/dashboard" className="group flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-stone-900 text-sm font-bold tracking-tight text-white shadow-sm transition-transform duration-200 group-hover:scale-105">
               C
             </span>
             <span className="leading-tight">
-              <span className="block text-[15px] font-semibold tracking-tight text-stone-900">CODEX</span>
-              <span className="hidden text-xs text-stone-600 sm:block">Chống đạo văn cho bài nộp</span>
+              <span className="block text-base font-semibold tracking-tight text-stone-900 dark:text-stone-100">CODEX</span>
+              <span className="hidden text-xs text-stone-500 sm:block">Chống đạo văn cho bài nộp</span>
             </span>
           </Link>
 
@@ -88,11 +88,11 @@ const Navbar = ({ children }: NavbarProps) => {
       <div className="flex">
         <aside
           className={[
-            "z-30 shrink-0 overflow-x-hidden overflow-y-auto border-r border-stone-200/70 bg-white",
-            "fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-[240px] transition-transform duration-300 ease-in-out",
-            "lg:sticky lg:top-14 lg:left-auto lg:h-[calc(100vh-3.5rem)] lg:translate-x-0 lg:transition-[width,padding]",
+            "z-30 shrink-0 overflow-x-hidden overflow-y-auto border-r border-stone-800 bg-stone-900",
+            "fixed left-0 top-16 h-[calc(100vh-4rem)] w-[248px] transition-transform duration-300 ease-in-out",
+            "lg:sticky lg:top-16 lg:left-auto lg:h-[calc(100vh-4rem)] lg:translate-x-0 lg:transition-[width,padding]",
             isMenuOpen ? "translate-x-0" : "-translate-x-full",
-            isMenuOpen ? "lg:w-[224px] lg:p-3" : "lg:w-0 lg:p-0 lg:overflow-hidden",
+            isMenuOpen ? "lg:w-[232px] lg:p-3" : "lg:w-0 lg:p-0 lg:overflow-hidden",
           ].join(" ")}
           aria-hidden={!isMenuOpen}
         >
@@ -106,12 +106,12 @@ const Navbar = ({ children }: NavbarProps) => {
               iconScale={1}
               gap={2}
               background="transparent"
-              iconColor="#78716c"
-              activeColor="#292524"
-              activeBackground="#f5f5f4"
-              hoverBackground="#fafaf9"
+              iconColor="#a8a29e"
+              activeColor="#fafaf9"
+              activeBackground="#292524"
+              hoverBackground="#1c1917"
               borderColor="transparent"
-              rounded="8px"
+              rounded="10px"
               duration={200}
               shadow={false}
               ariaLabel="Thanh điều hướng chính"
@@ -124,8 +124,8 @@ const Navbar = ({ children }: NavbarProps) => {
           )}
         </aside>
 
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">{children}</div>
+        <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10">
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
     </div>
