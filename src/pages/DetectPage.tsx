@@ -421,7 +421,7 @@ export default function DetectPage() {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
+                  className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition  hover:border-stone-300 hover:bg-stone-50"
                 >
                   Nạp file
                 </button>
@@ -467,7 +467,7 @@ export default function DetectPage() {
                   type="button"
                   onClick={() => void clearCode()}
                   data-guide="detect-clear"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-stone-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 shadow-sm transition  hover:border-stone-300 hover:bg-stone-50"
                 >
                   <FaXmark /> Xóa nội dung
                 </button>
@@ -504,12 +504,15 @@ export default function DetectPage() {
 
           <div className="mt-5 flex items-end justify-between gap-3">
             <div>
-              <p className="font-serif text-5xl font-semibold tracking-tight text-stone-900">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                Xác suất ước lượng
+              </p>
+              <p className="font-serif text-3xl font-semibold tracking-tight text-stone-900">
                 {bigProbability(analysis)}
-                <span className="text-2xl">%</span>
+                <span className="text-lg">%</span>
               </p>
               <p className="mt-1 text-xs text-stone-600">
-                {analysis.verdict === "human" ? "khả năng do người viết" : "khả năng do AI tạo"}
+                {analysis.verdict === "human" ? "khả năng do người viết" : analysis.verdict === "ai" ? "khả năng do AI tạo" : "chưa đủ căn cứ để phân loại"}
               </p>
             </div>
             <div className="text-right">
@@ -521,6 +524,9 @@ export default function DetectPage() {
               </p>
             </div>
           </div>
+          <p className="mt-3 text-xs leading-relaxed text-stone-500">
+            Con số này là ước lượng thống kê từ 34 chỉ số, không phải kết luận cuối cùng. Cần đọc kèm tín hiệu và bối cảnh bài làm.
+          </p>
 
           <div className="mt-5">
             <div className="relative flex h-2.5 overflow-hidden rounded-full bg-stone-100">
@@ -657,7 +663,7 @@ export default function DetectPage() {
                 {currentInsight.signals.map((signal, index) => (
                   <div
                     key={`${signal.label}-${index}`}
-                    className="flex items-start gap-2.5 rounded-xl border border-stone-100 bg-stone-50/60 px-3 py-2 shadow-sm transition hover:-translate-y-0.5"
+                    className="flex items-start gap-2.5 rounded-xl border border-stone-100 bg-stone-50/60 px-3 py-2 shadow-sm transition "
                   >
                     <span
                       className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
@@ -732,7 +738,7 @@ export default function DetectPage() {
             return (
               <section
                 key={group.id}
-                className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition  hover:shadow-md"
                 style={{ borderRadius: 12 }}
               >
                 <button

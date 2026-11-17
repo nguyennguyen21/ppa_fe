@@ -22,6 +22,15 @@ export default function UploadPage() {
   const [eta, setEta] = useState<number | null>(null);
   const [step, setStep] = useState(0);
   const canceledRef = useRef(false);
+  // Theo dõi đợt quét đang xử lí trên BE để tránh nộp bài mới khi BE chưa xong.
+  const SCAN_FLAG = "ppa.upload.scanning.v1";
+  const [systemScanning, setSystemScanning] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem(SCAN_FLAG) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     return () => {
@@ -31,6 +40,10 @@ export default function UploadPage() {
   }, []);
 
   const startScan = async () => {
+    if (systemScanning) {
+      toast.info("Đang có đợt quét đang xử lý", "Vui lòng chờ hoàn tất hoặc xoá trạng thái đang xử lý trước khi nộp bài mới.");
+      return;
+    }
     if (files.length === 0) return;
     const ok = await confirm({
       title: `Bắt đầu quét ${files.length} file?`,
@@ -40,6 +53,12 @@ export default function UploadPage() {
     if (!ok) return;
 
     canceledRef.current = false;
+    try {
+      sessionStorage.setItem(SCAN_FLAG, "1");
+    } catch {
+      // Bỏ qua nếu sessionStorage bị chặn.
+    }
+    setSystemScanning(true);
     setScanning(true);
     setProgress(0);
     setProcessed(0);
@@ -74,6 +93,12 @@ export default function UploadPage() {
         setProcessed(0);
         setEta(null);
         setStep(0);
+        try {
+          sessionStorage.removeItem(SCAN_FLAG);
+        } catch {
+          // Bỏ qua.
+        }
+        setSystemScanning(false);
         toast.info("Đã huỷ đợt quét", "Các file đã chọn vẫn được giữ nguyên.");
         return;
       }
@@ -88,6 +113,12 @@ export default function UploadPage() {
     } catch (exception) {
       setScanning(false);
       setStep(0);
+      try {
+        sessionStorage.removeItem("ppa.upload.scanning.v1");
+      } catch {
+        // Bỏ qua.
+      }
+      setSystemScanning(false);
       toast.error(
         "Quét thất bại",
         `Không gọi được backend: ${exception instanceof Error ? exception.message : String(exception)}`,
@@ -98,6 +129,12 @@ export default function UploadPage() {
     setScanning(false);
     setStep(2);
     setEta(0);
+    try {
+      sessionStorage.removeItem("ppa.upload.scanning.v1");
+    } catch {
+      // Bỏ qua.
+    }
+    setSystemScanning(false);
     toast.success(`Đã quét xong ${total} file`, "Đang mở trang kết quả…");
     window.setTimeout(() => navigate("/results"), 900);
   };
@@ -124,6 +161,30 @@ export default function UploadPage() {
           thành danh sách file riêng, giữ nguyên đường dẫn để dễ rà soát.
         </p>
       </div>
+
+      {systemScanning && !scanning && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <p className="font-semibold">Đang có đợt quét đang xử lý trên hệ thống</p>
+          <p className="mt-1 text-xs">
+            Backend vẫn đang xử lý đợt quét trước. Kết quả sẽ xuất hiện ở trang Kết quả khi hoàn tất.
+            Nếu bạn chắc chắn đợt quét đã kết thúc, hãy xoá trạng thái đang xử lý.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                sessionStorage.removeItem(SCAN_FLAG);
+              } catch {
+                // Bỏ qua.
+              }
+              setSystemScanning(false);
+            }}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-100"
+          >
+            Xoá trạng thái đang xử lý
+          </button>
+        </div>
+      )}
 
       {/* Steps */}
       <ol className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
@@ -160,7 +221,7 @@ export default function UploadPage() {
             <div className="mt-7 flex items-center justify-between border-t border-stone-100 pt-5">
               <p className="text-xs text-stone-600">{files.length ? `Đã có ${files.length} file sẵn sàng` : "Chưa chọn file nào"}</p>
               <button
-                disabled={files.length === 0 || scanning}
+                disabled={files.length === 0 || scanning || systemScanning}
                 onClick={() => void startScan()}
                 data-guide="upload-continue"
                 className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-sm"

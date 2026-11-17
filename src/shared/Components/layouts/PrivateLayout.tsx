@@ -4,7 +4,7 @@ import Navbar from "../UI/navbar/Navbar";
 
 const PrivateLayout = () => {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f6f7f5]">
       <Navbar>
         <Outlet />
       </Navbar>

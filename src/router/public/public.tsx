@@ -11,9 +11,7 @@ const AiDetectLandingPage = lazy(() => import("../../pages/AiDetectLandingPage")
 const AiSampleLibraryPage = lazy(() => import("../../pages/AiSampleLibraryPage"));
 const AiClusterPage = lazy(() => import("../../pages/AiClusterPage"));
 const ProfilePage = lazy(() => import("../../pages/ProfilePage"));
-const SupportPage = lazy(() => import("../../pages/SupportPage"));
-const SupportReceiptPage = lazy(() => import("../../pages/SupportReceiptPage"));
-const SupportDonorsPage = lazy(() => import("../../pages/SupportDonorsPage"));
+// Trang hỗ trợ/ủng hộ đã được gỡ theo yêu cầu.
 
 export const publicRoutes = [
   { path: "/dashboard", element: <Dashboard /> },
@@ -26,7 +24,5 @@ export const publicRoutes = [
   { path: "/compare", element: <ComparePage /> },
   { path: "/relations", element: <RelationsPage /> },
   { path: "/profile", element: <ProfilePage /> },
-  { path: "/support", element: <SupportPage /> },
-  { path: "/support/receipt", element: <SupportReceiptPage /> },
-  { path: "/support/donors", element: <SupportDonorsPage /> },
+
 ];
