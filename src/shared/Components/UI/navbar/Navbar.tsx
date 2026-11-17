@@ -5,7 +5,7 @@ import { FaMoon, FaSun } from "react-icons/fa6";
 
 import SwitchButton from "../Button/SwitchButton";
 import HamburgerBar from "./HambugerBar";
-import SupportRoundButton from "./SupportRoundButton";
+
 import SettingsMenu from "./SettingsMenu";
 import { useTheme } from "../../../hook/theme-context";
 
@@ -39,7 +39,7 @@ const Navbar = ({ children }: NavbarProps) => {
   return (
     <div className="min-h-screen">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b border-stone-200/60 bg-white/80 backdrop-blur-xl shadow-[0_1px_0_rgba(28,25,23,0.04)] dark:border-stone-800 dark:bg-[#151413]/80">
+      <header className="sticky top-0 z-40 border-b border-stone-200 bg-white dark:border-stone-800 dark:bg-[#151413]">
         <div className="flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
           <SwitchButton
             checked={isMenuOpen}
@@ -81,7 +81,7 @@ const Navbar = ({ children }: NavbarProps) => {
           type="button"
           aria-label="Đóng thanh điều hướng"
           onClick={() => setMenuOpen(false)}
-          className="fixed inset-0 z-20 cursor-default bg-stone-950/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-20 cursor-default bg-stone-950/50 lg:hidden"
         />
       )}
 
@@ -119,7 +119,7 @@ const Navbar = ({ children }: NavbarProps) => {
               onNavigate={() => {
                 if (window.matchMedia("(max-width: 1023px)").matches) setMenuOpen(false);
               }}
-              footer={<SupportRoundButton />}
+              
             />
           )}
         </aside>

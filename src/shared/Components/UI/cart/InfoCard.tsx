@@ -80,8 +80,8 @@ const InfoCard: React.FC<InfoCardProps> = ({
   return (
     <div
       onClick={onCardClick}
-      className={`${cardBgColor} ${sizeClasses[size]} rounded-xl border border-stone-200 shadow-sm flex items-start gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-stone-300 ${
-        onCardClick ? "transition-transform hover:scale-[1.02] cursor-pointer" : ""
+      className={`${cardBgColor} ${sizeClasses[size]} rounded-xl border border-stone-200 shadow-sm flex items-start gap-4 transition-colors duration-150 hover:shadow-md hover:border-stone-300 ${
+        onCardClick ? "cursor-pointer" : ""
       }`}
     >
       {/* Icon Area */}
