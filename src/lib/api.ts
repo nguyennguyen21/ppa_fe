@@ -100,6 +100,13 @@ export interface AiHighlightResponseDto {
   codeId: number | null;
   overallPrediction: string | null;
   overallConfidence: number | null;
+  /** XA�c su���t AI tr���c ti���p t��� model (0..1). FE PH���I dA1ng tr���c ti���p, khA'ng suy ra t��� confidence. */
+  aiProbability?: number | null;
+  /** XA�c su���t ng����?i vi���t tr���c ti���p t��� model (0..1). */
+  humanProbability?: number | null;
+  /** PhiA�n b���n model �`ang dA1ng �`��� phA�n lo���i (�`��� phA�t hi���n k���t qu��� c��). */
+  modelVersion?: string | null;
+  modelName?: string | null;
   heuristicScore: number | null;
   totalLines: number;
   suspiciousLineCount: number;

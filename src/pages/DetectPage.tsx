@@ -140,15 +140,29 @@ export default function DetectPage() {
     const base = localAnalysis;
     if (!beHighlight) return base;
     const confidence = beHighlight.overallConfidence ?? base.confidence;
-    const verdict: Verdict = beHighlight.overallPrediction === "ai" ? "ai" : beHighlight.overallPrediction === "human" ? "human" : "unclear";
-    const aiProbability = verdict === "ai" ? confidence : verdict === "human" ? 1 - confidence : confidence;
-    const humanProbability = verdict === "ai" ? 1 - confidence : verdict === "human" ? confidence : 1 - confidence;
+    const hasBackendProbability =
+      typeof beHighlight.aiProbability === "number" && Number.isFinite(beHighlight.aiProbability);
+    // Chi dung xac suat AI truc tiep tu backend. Khong suy ra tu confidence
+    // (confidence khong dong nghia voi xac suat AI), tranh hien thi sai.
+    const verdict: Verdict = hasBackendProbability
+      ? beHighlight.overallPrediction === "ai"
+        ? "ai"
+        : beHighlight.overallPrediction === "human"
+          ? "human"
+          : "unclear"
+      : base.verdict;
+    const aiProbability = hasBackendProbability ? (beHighlight.aiProbability as number) : base.aiProbability;
+    const humanProbability = 1 - aiProbability;
     const notes = [...base.notes];
-    notes.push(`Backend: ${beHighlight.overallPrediction ?? "unknown"} (${Math.round((beHighlight.overallConfidence ?? 0) * 100)}%) · heuristic ${beHighlight.heuristicScore ?? 0} · ${beHighlight.suspiciousLineCount ?? 0}/${beHighlight.totalLines ?? 0} dòng nghiêng`);
+    if (hasBackendProbability) {
+      notes.push(`Backend: ${beHighlight.overallPrediction ?? "unknown"} (${Math.round((beHighlight.overallConfidence ?? 0) * 100)}%) · heuristic ${beHighlight.heuristicScore ?? 0} · ${beHighlight.suspiciousLineCount ?? 0}/${beHighlight.totalLines ?? 0} dòng nghiêng`);
+    } else {
+      notes.push("Backend chưa trả về xác suất AI — hiển thị phân tích cục bộ. Chưa đủ dữ liệu để xác định.");
+    }
     const merged: AnalysisResult = {
       ...base,
       verdict,
-      confidence,
+      confidence: hasBackendProbability ? confidence : base.confidence,
       aiProbability,
       humanProbability,
       notes,
