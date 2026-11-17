@@ -122,8 +122,16 @@ function AiStatsSection() {
     const fromBackend = aiResults.map((result) => {
       const verdict: Verdict = result.prediction === "ai" ? "ai" : result.prediction === "human" ? "human" : "unclear";
       const confidence = result.confidence ?? 0;
-      const aiProbability = verdict === "ai" ? confidence : verdict === "human" ? 1 - confidence : confidence;
-      const humanProbability = verdict === "ai" ? 1 - confidence : verdict === "human" ? confidence : 1 - confidence;
+      // Uu tien aiProbability truc tiep tu backend; chi suy ra khi thieu.
+      const aiProbability =
+        typeof result.aiProbability === "number" && Number.isFinite(result.aiProbability)
+          ? result.aiProbability
+          : verdict === "ai"
+            ? confidence
+            : verdict === "human"
+              ? 1 - confidence
+              : confidence;
+      const humanProbability = 1 - aiProbability;
       const sample: LibrarySample = {
         id: `be:${result.codeId}`,
         kind: verdict === "ai" ? "ai" : verdict === "human" ? "human" : "mixed",

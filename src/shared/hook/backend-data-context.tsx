@@ -81,9 +81,12 @@ export interface AiFileResult {
   /** "ai" | "human" | "trung gian" (kể cả unknown). */
   prediction: string;
   confidence: number;
+  /** Xac suat AI truc tiep tu model (0..1) khi backend cung cap; fallback suy ra tu confidence. */
+  aiProbability: number;
   heuristicScore: number | null;
   suspiciousLineCount: number;
   totalLines: number;
+  modelVersion?: string | null;
 }
 
 interface BackendDataValue {
@@ -565,9 +568,18 @@ export function BackendDataProvider({ children }: { children: ReactNode }) {
                   fileName: fileNames.get(codeId) ?? `#${codeId}`,
                   prediction: highlight.overallPrediction ?? "unknown",
                   confidence: highlight.overallConfidence ?? 0,
+                  aiProbability:
+                    highlight.aiProbability != null
+                      ? highlight.aiProbability
+                      : (highlight.overallPrediction === "ai"
+                          ? (highlight.overallConfidence ?? 0)
+                          : highlight.overallPrediction === "human"
+                            ? 1 - (highlight.overallConfidence ?? 0)
+                            : (highlight.overallConfidence ?? 0)),
                   heuristicScore: highlight.heuristicScore ?? null,
                   suspiciousLineCount: highlight.suspiciousLineCount ?? 0,
                   totalLines: highlight.totalLines ?? 0,
+                  modelVersion: highlight.modelVersion ?? null,
                 };
               }
             } catch {
